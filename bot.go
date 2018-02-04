@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
-	"haynes-bot/pokemon"
+	"github.com/haynesherway/pogo"
 	"strconv"
 	"strings"
 )
@@ -127,7 +127,7 @@ func Start() {
 		fmt.Println("Unable to update status: ", err.Error())
 	}
 	
-	ivCalculator = pokemon.StartIVCalculator(goBot)
+	ivCalculator = pogo.StartIVCalculator(goBot)
 
 	fmt.Println("Bot is running!")
 }
@@ -143,8 +143,6 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID == BotID {
 		return
 	}
-
-	fmt.Println(m.Content)
 	
 	bot := NewBotResponse(s, m, strings.Fields(m.Content))
 	cmd := bot.GetCommandName()
@@ -209,7 +207,7 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if err != nil {
 			bot.PrintErrorToDiscord(err)
 		}
-	case "haynes-bot", "haynez-bot":
+	case "haynes-bot", "haynez-bot", "haynesbot":
 		bot.PrintInfoToDiscord()
 	}
 	
@@ -267,7 +265,7 @@ func (b *botResponse) PrintIVToDiscord() error {
 		}
 	}
 	
-	if p, ok := pokemon.PokemonMap[pokemonName]; ok {
+	if p, ok := pogo.PokemonMap[pokemonName]; ok {
 	    ivChart := p.GetIV(cp, level, stardust, bestvals)
 		if len(ivChart) == 0 {
 	            return &botError{ERR_NO_COMBINATIONS, p.Name}
@@ -296,7 +294,7 @@ func (b *botResponse) PrintCPToDiscord() error {
 		return &botError{ERR_CP_COMMAND, ""}
 	}
 
-	if p, ok := pokemon.PokemonMap[pokemonName]; ok {
+	if p, ok := pogo.PokemonMap[pokemonName]; ok {
 	    cp := p.GetCP(level, ivA, ivD, ivS)
 	    message := fmt.Sprintf("CP for **%s** at level %d with IVs %d/%d/%d is %d", p.Name, level, ivA, ivD, ivS, cp)
 	    b.PrintToDiscord(message)
@@ -314,7 +312,7 @@ func (b *botResponse) PrintMaxCPToDiscord() error {
 
 	pokemonName := strings.ToLower(b.fields[1])
 	
-	if pokemon, ok := pokemon.PokemonMap[pokemonName]; ok {
+	if pokemon, ok := pogo.PokemonMap[pokemonName]; ok {
 	    maxcp := pokemon.GetMaxCP()
 	    if maxcp == 0 {
 	    	return &botError{ERR_NO_STATS, pokemon.Name}
@@ -334,7 +332,7 @@ func (b *botResponse) PrintRaidChartToDiscord() error {
 
 	pokemonName := strings.ToLower(b.fields[1])
 	
-	if p, ok := pokemon.PokemonMap[pokemonName]; ok {
+	if p, ok := pogo.PokemonMap[pokemonName]; ok {
 		b.PrintToDiscord(p.GetRaidCPChart())
 	} else {
 	    return &botError{ERR_POKEMON_UNRECOGNIZED, b.fields[1]}
@@ -350,7 +348,7 @@ func (b *botResponse) PrintRaidCPToDiscord() error {
 
 	pokemonName := strings.ToLower(b.fields[1])
 
-	if p, ok := pokemon.PokemonMap[pokemonName]; ok {
+	if p, ok := pogo.PokemonMap[pokemonName]; ok {
 	    if len(b.fields) == 2 {
 	    	b.PrintToDiscord(p.GetRaidCPRange())
 	    } else {
@@ -379,7 +377,7 @@ func (b *botResponse) PrintMovesToDiscord() error {
 	
 	pokemonName := strings.ToLower(b.fields[1])
 	
-	if p, ok := pokemon.PokemonMap[pokemonName]; ok {
+	if p, ok := pogo.PokemonMap[pokemonName]; ok {
 	    message := fmt.Sprintf("Moves for **%s**:\nFast: %s\nCharge: %s", p.Name, p.Moves.Fast.Print(), p.Moves.Charge.Print())
 	    b.PrintToDiscord(message)
 	} else {
@@ -396,7 +394,7 @@ func (b *botResponse) PrintTypeToDiscord() error {
 	
 	pokemonName := strings.ToLower(b.fields[1])
 	
-	if p, ok := pokemon.PokemonMap[pokemonName]; ok {
+	if p, ok := pogo.PokemonMap[pokemonName]; ok {
 		message := fmt.Sprintf("Type for **%s**: %s", p.Name, p.Types.Print())
 		b.PrintToDiscord(message)
 	} else {
@@ -413,7 +411,7 @@ func (b *botResponse) PrintTypeChartToDiscord() error {
 	
 	typeValue := strings.ToLower(b.fields[1])
 	
-	if p, ok := pokemon.PokemonMap[typeValue]; ok {
+	if p, ok := pogo.PokemonMap[typeValue]; ok {
 		b.PrintToDiscord(p.PrintTypeChart())
 	} else if t, ok := pokemon.TypeMap[pokemon.Type2ID[typeValue]]; ok {
 		b.PrintToDiscord(t.PrintTypeChart())
@@ -454,7 +452,7 @@ func (e *botError) Error() string {
 }
 
 func (e *botError) pokemonUnrecognized() bool {
-	if _, ok := pokemon.PokemonMap[strings.ToLower(e.pokemon)]; !ok {
+	if _, ok := pogo.PokemonMap[strings.ToLower(e.pokemon)]; !ok {
 		return false
 	}
 	return true
