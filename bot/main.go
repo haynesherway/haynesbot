@@ -2,8 +2,7 @@ package main
 
 import (
 	"fmt"
-	"haynes-bot/bot"
-	"haynes-bot/config"
+	"github.com/haynesherway/haynesbot"
 )
 
 func main() {

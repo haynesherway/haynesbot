@@ -1,8 +1,7 @@
-package config
+package haynesbot
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io/ioutil"
 )
@@ -10,7 +9,6 @@ import (
 var (
 	Token     string
 	BotPrefix string
-	test		bool
 
 	config *configStruct
 )
@@ -23,11 +21,7 @@ type configStruct struct {
 func ReadConfig() error {
 	fmt.Println("Reading from config file...")
 
-	file, err := ioutil.ReadFile("./config.json")
-	if test {
-		fmt.Println("Running test version...")
-		file, err = ioutil.ReadFile("./testconfig.json")
-	}
+	file, err := ioutil.ReadFile("config.json")
 	if err != nil {
 		fmt.Println(err.Error())
 		return err
@@ -43,9 +37,4 @@ func ReadConfig() error {
 	BotPrefix = config.BotPrefix
 
 	return nil
-}
-
-func init() {
-	flag.BoolVar(&test, "t", false, "Run for testing")
-	flag.Parse()
 }

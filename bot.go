@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
-	"haynes-bot/config"
 	"haynes-bot/pokemon"
 	"strconv"
 	"strings"
