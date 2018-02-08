@@ -12,6 +12,9 @@ import (
 const INFO = 
 `**---- HAYNES-BOT ----**
 Commands:
+	**!iv** {pokemon} {cp} [{level|stardust}] [{best stats (adh)}]
+		Get possible IVs of a pokemon
+		Example: !iv numel 506 33 d or !iv pikachu 613 500 ad or !iv raichu 1703
 	**!cp** {pokemon} {level} {attack iv} {defense iv} {stamina iv}
 		Get CP of a pokemon at a specified level with specified IVs
 		Example: !cp mewtwo 25 15 14 15
@@ -207,7 +210,7 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if err != nil {
 			bot.PrintErrorToDiscord(err)
 		}
-	case "haynes-bot", "haynez-bot", "haynesbot":
+	case "haynes-bot", "haynez-bot", "haynesbot", "wat":
 		bot.PrintInfoToDiscord()
 	}
 	
@@ -260,8 +263,8 @@ func (b *botResponse) PrintIVToDiscord() error {
 		if strings.Contains(b.fields[4], "d") {
 			bestvals += "d"
 		}
-		if strings.Contains(b.fields[4], "h") {
-			bestvals += "h"
+		if strings.Contains(b.fields[4], "h") || strings.Contains(b.fields[4], "s") {
+			bestvals += "s"
 		}
 	}
 	
