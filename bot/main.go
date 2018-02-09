@@ -6,14 +6,14 @@ import (
 )
 
 func main() {
-	err := config.ReadConfig()
+	err := haynesbot.ReadConfig()
 
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
 
-	bot.Start()
+	haynesbot.Start()
 
 	<-make(chan struct{})
 
