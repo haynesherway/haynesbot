@@ -395,29 +395,27 @@ func PrintRaidChartToDiscord(b *botResponse) error {
 		rows := strings.Split(chart, "\n")
 		emb := NewEmbed().
 			SetColor(0x9013FE).
-			AddField(p.Name, Example(strings.Join(rows[:25], "\n")))
+			AddField("Raid Chart", Example(strings.Join(rows[:40], "\n")))
 			
 			if len(b.fields) > 2 {
 				if strings.ToLower(b.fields[2]) == "full" {
 					rowCount := len(rows)
-					st, en := 26, 50
+					st, en := 41, 80
 					for {
 						if en > rowCount {
 							en = rowCount
 						}
 						emb.AddField("Continued", Example(strings.Join(rows[st:en], "\n")))
 						
-						if en == rowCount || en > 120 {
+						if en == rowCount || en > 200 {
 							break
 						}
-						st+=25
-						en+=25
+						st+=40
+						en+=40
 					}
 				}
 			}
-			
-			
-			emb.SetThumbnail(p.API.Sprites.Front)
+			emb.SetAuthor(p.Name, p.API.Sprites.Front)
 			b.PrintEmbedToDiscord(emb.MessageEmbed)
 	} else {
 		return &botError{ERR_POKEMON_UNRECOGNIZED, b.fields[1]}
@@ -452,8 +450,9 @@ func PrintRaidCPToDiscord(b *botResponse) error {
 			} else {
 				emb := NewEmbed().
 				SetColor(0x9013FE).
-				AddField(p.Name, Example(ivChart)).
-				SetThumbnail(p.API.Sprites.Front).MessageEmbed
+				AddField(fmt.Sprintf("CP: %d", cp), Example(ivChart)).
+				SetAuthor(p.Name, p.API.Sprites.Front).MessageEmbed
+				//SetImage(p.API.Sprites.Front).MessageEmbed
 				b.PrintEmbedToDiscord(emb)
 			}
 		}

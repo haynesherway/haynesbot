@@ -40,6 +40,41 @@ func (e *Embed) SetDescription(description string) *Embed {
 	return e
 }
 
+//SetAuthor ...
+func (e *Embed) SetAuthor(args ...string) *Embed {
+	var (
+		name     string
+		iconURL  string
+		URL      string
+		proxyURL string
+	)
+
+	if len(args) == 0 {
+		return e
+	}
+	if len(args) > 0 {
+		name = args[0]
+	}
+	if len(args) > 1 {
+		iconURL = args[1]
+	}
+	if len(args) > 2 {
+		URL = args[2]
+	}
+	if len(args) > 3 {
+		proxyURL = args[3]
+	}
+
+	e.Author = &discordgo.MessageEmbedAuthor{
+		Name:         name,
+		IconURL:      iconURL,
+		URL:          URL,
+		ProxyIconURL: proxyURL,
+	}
+
+	return e
+}
+
 //SetImage ...
 func (e *Embed) SetImage(args ...string) *Embed {
 	var URL string
