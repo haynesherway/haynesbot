@@ -14,6 +14,7 @@ var (
 	Token     string
 	TestToken string
 	BotPrefix string
+	ManagedGuilds []string
 	test      bool
 
 	config *configStruct
@@ -24,6 +25,7 @@ type configStruct struct {
 	BotPrefix string `json:"BotPrefix"`
 	TestToken string `json:"TestToken"`
 	TestPrefix string `json:"TestPrefix"`
+	ManagedGuilds []string `json:"ManagedGuilds"`
 }
 
 func ReadConfig() error {
@@ -55,6 +57,7 @@ func ReadConfig() error {
 	TestToken = config.TestToken
 	Token = config.Token
 	BotPrefix = config.BotPrefix
+	ManagedGuilds = config.ManagedGuilds
 
 	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/haynesherway/pogo"
+	"log"
 	"strconv"
 	"strings"
 )
@@ -31,7 +32,15 @@ var (
 	ERR_COMMAND_UNRECOGNIZED = errors.New("Command not recognized")
 	ERR_COORDS_COMMAND = errors.New("Coords command needs to be formatted like this: !coords {lat,long}")
 
-	ERR_WRONG_CHANNEL = errors.New("IV Calculator must be used in the designated channel.")
+	ERR_NO_CHANNEL = errors.New("Unable to get Channel ID")
+	ERR_NO_GUILD = errors.New("Unable to get Guild ID")
+	ERR_NO_TEAM = errors.New("No team provided.")
+	
+	ERR_MISSING_ROLE = errors.New("Missing role.")
+	ERR_INVALID_ROLE = errors.New("Invalid role.")
+	ERR_ROLE_ADD = errors.New("Unable to add role :(")
+	ERR_ROLE_REMOVE = errors.New("Unable to remove role :(")
+	
 )
 
 //var POKEGO_URL = "https://pokemon.pokego2.com/coords-"
@@ -55,6 +64,7 @@ type BotCommand struct {
 	Info string
 	Example []string
 	Print bool
+	Aliases []string
 	Do
 }
 
@@ -63,52 +73,71 @@ var botCommands = []BotCommand{
 	{"iv", "!iv [pokemon] [cp] {level|stardust} {adh}",
 		"Get possible IVs of a pokemon", 
 		[]string{"!iv numel 506 33 d", "!iv pikachu 613 500 ad", "!iv raichu 1703"}, true,
+		[]string{},
 		PrintIVToDiscord,
 	},
 	{"cp", "!cp [pokemon] [level] [attack iv] [defense iv] [stamina iv]",
 		"Get CP of a pokemon at a specified level with specified IVs",
 		[]string{"!cp mewtwo 25 15 14 15"}, true,
+		[]string{},
 		PrintCPToDiscord,
 	},
 	{"maxcp", "!maxcp [pokemon]",
 		"Get maximum CP of a pokemon with perfect IVs at level 40", 
 		[]string{"!maxcp latios"}, true,
+		[]string{},
 		PrintMaxCPToDiscord,
 	},
-	{"raidcp", "!raidcp [pokemon] {cp}",
+	{"raidiv", "!raidiv [pokemon] {cp}",
 		"Get possible IV combinations for specified raid pokemon with specified IV",
 		[]string{"!raidcp kyogre 2292", "!raidcp groudon"}, true,
+		[]string{"raidcp"},
 		PrintRaidCPToDiscord,
 	},
 	{"raidchart", "!raidchart [pokemon] {'full'}",
 		"Get a chart with possible stats for specified pokemon at raid level above 90%",
 		[]string{"!raidchart machamp", "!raidchart rayquaza full"}, true,
+		[]string{},
 		PrintRaidChartToDiscord,
 	},
 	{"moves", "!moves [pokemon]",
 		"Get a list of fast and charge moves for specified pokemon",
 		[]string{"!moves rayquaza"}, true,
+		[]string{},
 		PrintMovesToDiscord,
 	},
 	{"type", "!type [pokemon]",
 		"Get a list of types for a specified pokemon",
 		[]string{"!type rayquaza"}, true,
+		[]string{},
 		PrintTypeToDiscord,
 	},
 	{"effect", "!effect [pokemon|type]",
 		"Get a list of type relations a specified pokemon or type has",
 		[]string{"!effect pikachu", "!effect electric"}, true,
+		[]string{},
 		PrintTypeChartToDiscord,
 	},
 	{"wat", "!wat {command|'full'}",
 		"Get info about commands",
 		[]string{"!wat", "!wat full", "!wat raidcp"}, true,
+		[]string{"haynes-bot", "haynez-bot"},
 		PrintInfoToDiscord,
 	},
 	{"coords", "!coords {lat, long}",
 		"Get a link to google maps for coordinates",
 		[]string{"!coords 43.24124,-76.14241"}, false,
+		[]string{},
 		PrintCoordsToDiscord,
+	},
+	{"team", "!team {mystic|valor|instinct}",
+		"Get assigned to a team",
+		[]string{"!team mystic", "!team valor", "!team instinct"}, false,
+		[]string{},
+		AssignTeam,
+	},
+	{"add", "!add", "Add this guild to state",
+		[]string{}, false, []string{}, AddGuild,
 	},
 }
 
@@ -174,6 +203,8 @@ func Start() {
 		BotID = u.ID
 
 		goBot.AddHandler(messageHandler)
+		goBot.AddHandler(welcomeHandler)
+		goBot.AddHandler(goodbyeHandler)
 		err = goBot.Open()
 		if err != nil {
 			fmt.Println(err.Error())
@@ -186,6 +217,46 @@ func Start() {
 		}
 
 		fmt.Println("Bot is running!")
+}
+
+func welcomeHandler(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
+	if !IsManaged(m.GuildID) {
+		return
+	}
+	
+	g, err := s.Guild(m.GuildID)
+	if err != nil {
+		return
+	}
+	
+	guild := Guild{g}
+	
+	err = guild.PrintWelcome(m.User)
+	if err != nil {
+		log.Println(err)
+	}
+	
+	return
+}
+
+func goodbyeHandler(s *discordgo.Session, m *discordgo.GuildMemberRemove) {
+	if !IsManaged(m.GuildID) {
+		return
+	}
+	
+	g, err := s.Guild(m.GuildID)
+	if err != nil {
+		return
+	}
+	
+	guild := Guild{g}
+	
+	err = guild.PrintGoodbye(m.User)
+	if err != nil {
+		log.Println(err)
+	}
+	
+	return
 }
 
 func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -210,54 +281,89 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 			bot.PrintErrorToDiscord(err)
 		}
 
-/*
-	switch cmd.Name {
-	case "cp":
-		err := bot.PrintCPToDiscord()
-		if err != nil {
-			bot.PrintErrorToDiscord(err)
-		}
-	case "iv":
-		err := bot.PrintIVToDiscord()
-		if err != nil {
-			bot.PrintErrorToDiscord(err)
-		}
-	case "raidcp":
-		err := bot.PrintRaidCPToDiscord()
-		if err != nil {
-			bot.PrintErrorToDiscord(err)
-		}
-	case "raidchart":
-		err := bot.PrintRaidChartToDiscord()
-		if err != nil {
-			bot.PrintErrorToDiscord(err)
-		}
-	case "maxcp":
-		err := bot.PrintMaxCPToDiscord()
-		if err != nil {
-			bot.PrintErrorToDiscord(err)
-		}
-	case "moves":
-		err := bot.PrintMovesToDiscord()
-		if err != nil {
-			bot.PrintErrorToDiscord(err)
-		}
-	case "types", "type":
-		err := bot.PrintTypeToDiscord()
-		if err != nil {
-			bot.PrintErrorToDiscord(err)
-		}
-	case "effect":
-		err := bot.PrintTypeChartToDiscord()
-		if err != nil {
-			bot.PrintErrorToDiscord(err)
-		}
-	case "haynes-bot", "haynez-bot", "haynesbot", "wat":
-		//bot.PrintInfoToDiscord()
-	}*/
-
 	return
 
+}
+
+func AddGuild(b *botResponse) error {
+	channel, err := b.s.Channel(b.m.ChannelID)
+	if err != nil {
+		return &botError{ERR_NO_CHANNEL, ""}
+	}
+	
+	if !IsManaged(channel.GuildID) {
+		return &botError{ERR_NOT_MANAGED, ""}
+	}
+	
+	g, err := b.s.Guild(channel.GuildID)
+	if err != nil {
+		return &botError{ERR_NO_GUILD, ""}
+	}
+	
+	guild := Guild{g}
+	
+	// Check Roles
+	err = guild.CheckRoles()
+	if err != nil {
+		return &botError{err, ""}
+	}
+	b.s.State.GuildAdd(guild.Guild)
+	
+	return nil
+}
+
+//AssignTeam assigns one of three teams (mystic,valor,instinct)
+func AssignTeam(b *botResponse) error {
+	if len(b.fields) < 2 {
+		return &botError{ERR_NO_TEAM, ""}
+	}
+	
+	team := strings.ToLower(b.fields[1])
+	// Make sure this is a valid team
+	if !IsValidTeam(team) {
+		return &botError{ERR_INVALID_ROLE, b.fields[1]}
+	}
+	
+	// Attempt to get the channe from the state
+	// If error, fall back to restapi
+	channel, err := b.s.State.Channel(b.m.ChannelID)
+	if err != nil {
+		channel, err = b.s.Channel(b.m.ChannelID)
+		if err != nil {
+			return &botError{ERR_NO_CHANNEL, ""}
+		}
+	}
+	
+	if !IsManaged(channel.GuildID) {
+		return &botError{ERR_NOT_MANAGED, ""}
+	}
+	
+	// Attempt to get the guild from the state
+	// If error, fall back to restapi
+	g, err := b.s.State.Guild(channel.GuildID)
+	if err != nil {
+		g, err = b.s.Guild(channel.GuildID)
+		if err != nil {
+			return &botError{ERR_NO_GUILD, ""}
+		}
+	}
+	
+	guild := Guild{g}
+	
+	// Remove all team roles
+	err = guild.RemoveAllTeams(b.s, b.m.Author.ID)
+	if err != nil {
+		return ERR_ROLE_REMOVE
+	}
+	
+	err = guild.AddRole(b.s, b.m.Author.ID, team)
+	if err != nil {
+		return err
+	}
+	
+	b.PrintToDiscord(fmt.Sprintf("You have been added to team %s!", team))
+	
+	return nil
 }
 
 //PrintInfoToDiscord prints the bot info to discord
@@ -585,6 +691,9 @@ func (b *botResponse) PrintEmbedToDiscord(e *discordgo.MessageEmbed) {
 // PrintErrorToDiscord prints the error to discord
 func (b *botResponse) PrintErrorToDiscord(err error) {
 	if berr, ok := err.(*botError); ok {
+		if berr.Error() == "" {
+			return
+		}
 		_, _ = b.s.ChannelMessageSend(b.m.ChannelID, berr.Error())
 	} else {
 		_, _ = b.s.ChannelMessageSend(b.m.ChannelID, err.Error())
@@ -594,19 +703,25 @@ func (b *botResponse) PrintErrorToDiscord(err error) {
 
 type botError struct {
 	err     error
-	pokemon string
+	value string
 }
 
 // Error formats the error message for printing
 func (e *botError) Error() string {
-	if e.err == ERR_POKEMON_UNRECOGNIZED && e.pokemon != "" {
-		return fmt.Sprintf("Pokemon unrecognized: %s", e.pokemon)
-	} else if e.err == ERR_POKEMON_TYPE_UNRECOGNIZED && e.pokemon != "" {
-		return fmt.Sprintf("Pokemon/type unrecognized: %s", e.pokemon)
-	} else if e.err == ERR_NO_COMBINATIONS && e.pokemon != "" {
-		return fmt.Sprintf("No possible IV combinations for that CP for %s", e.pokemon)
-	} else if e.err == ERR_NO_STATS && e.pokemon != "" {
-		return fmt.Sprintf("No stats available for %s in the Pokemon Go Master file yet :(", e.pokemon)
+	if e.err == ERR_POKEMON_UNRECOGNIZED && e.value != "" {
+		return fmt.Sprintf("Pokemon unrecognized: %s", e.value)
+	} else if e.err == ERR_POKEMON_TYPE_UNRECOGNIZED && e.value != "" {
+		return fmt.Sprintf("Pokemon/type unrecognized: %s", e.value)
+	} else if e.err == ERR_NO_COMBINATIONS && e.value != "" {
+		return fmt.Sprintf("No possible IV combinations for that CP for %s", e.value)
+	} else if e.err == ERR_NO_STATS && e.value != "" {
+		return fmt.Sprintf("No stats available for %s in the Pokemon Go Master file yet :(", e.value)
+	} else if e.err == ERR_NOT_MANAGED {
+		return ""
+	} else if e.err == ERR_MISSING_ROLE && e.value != "" {
+		return fmt.Sprintf("Missing role: %s", e.value)
+	} else if e.err == ERR_INVALID_ROLE && e.value != "" {
+		return fmt.Sprintf("Invalid role: %s", e.value)
 	}
 	return e.err.Error()
 }
@@ -615,5 +730,10 @@ func init() {
 	cmdMap = make(map[string]BotCommand)
 	for _, cmd := range botCommands {
 		cmdMap[cmd.Name] = cmd
+		if len(cmd.Aliases) > 0 {
+			for _, alias := range cmd.Aliases {
+				cmdMap[alias] = cmd
+			}
+		}
 	}
 }
