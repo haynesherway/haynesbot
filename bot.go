@@ -29,9 +29,13 @@ var (
 	ERR_POKEMON_UNRECOGNIZED = errors.New("Pokemon not recognized.")
 	ERR_POKEMON_TYPE_UNRECOGNIZED = errors.New("Pokemon/type not recognized.")
 	ERR_COMMAND_UNRECOGNIZED = errors.New("Command not recognized")
+	ERR_COORDS_COMMAND = errors.New("Coords command needs to be formatted like this: !coords {lat,long}")
 
 	ERR_WRONG_CHANNEL = errors.New("IV Calculator must be used in the designated channel.")
 )
+
+//var POKEGO_URL = "https://pokemon.pokego2.com/coords-"
+var POKEGO_URL = "https://pokedex100.com/?z="
 
 type botResponse struct {
 	s       *discordgo.Session
@@ -50,6 +54,7 @@ type BotCommand struct {
 	Format string
 	Info string
 	Example []string
+	Print bool
 	Do
 }
 
@@ -57,48 +62,53 @@ var cmdMap map[string]BotCommand
 var botCommands = []BotCommand{
 	{"iv", "!iv [pokemon] [cp] {level|stardust} {adh}",
 		"Get possible IVs of a pokemon", 
-		[]string{"!iv numel 506 33 d", "!iv pikachu 613 500 ad", "!iv raichu 1703"},
+		[]string{"!iv numel 506 33 d", "!iv pikachu 613 500 ad", "!iv raichu 1703"}, true,
 		PrintIVToDiscord,
 	},
 	{"cp", "!cp [pokemon] [level] [attack iv] [defense iv] [stamina iv]",
 		"Get CP of a pokemon at a specified level with specified IVs",
-		[]string{"!cp mewtwo 25 15 14 15"},
+		[]string{"!cp mewtwo 25 15 14 15"}, true,
 		PrintCPToDiscord,
 	},
 	{"maxcp", "!maxcp [pokemon]",
 		"Get maximum CP of a pokemon with perfect IVs at level 40", 
-		[]string{"!maxcp latios"},
+		[]string{"!maxcp latios"}, true,
 		PrintMaxCPToDiscord,
 	},
 	{"raidcp", "!raidcp [pokemon] {cp}",
 		"Get possible IV combinations for specified raid pokemon with specified IV",
-		[]string{"!raidcp kyogre 2292", "!raidcp groudon"},
+		[]string{"!raidcp kyogre 2292", "!raidcp groudon"}, true,
 		PrintRaidCPToDiscord,
 	},
 	{"raidchart", "!raidchart [pokemon] {'full'}",
 		"Get a chart with possible stats for specified pokemon at raid level above 90%",
-		[]string{"!raidchart machamp", "!raidchart rayquaza full"},
+		[]string{"!raidchart machamp", "!raidchart rayquaza full"}, true,
 		PrintRaidChartToDiscord,
 	},
 	{"moves", "!moves [pokemon]",
 		"Get a list of fast and charge moves for specified pokemon",
-		[]string{"!moves rayquaza"},
+		[]string{"!moves rayquaza"}, true,
 		PrintMovesToDiscord,
 	},
 	{"type", "!type [pokemon]",
 		"Get a list of types for a specified pokemon",
-		[]string{"!type rayquaza"},
+		[]string{"!type rayquaza"}, true,
 		PrintTypeToDiscord,
 	},
 	{"effect", "!effect [pokemon|type]",
 		"Get a list of type relations a specified pokemon or type has",
-		[]string{"!effect pikachu", "!effect electric"},
+		[]string{"!effect pikachu", "!effect electric"}, true,
 		PrintTypeChartToDiscord,
 	},
 	{"wat", "!wat {command|'full'}",
 		"Get info about commands",
-		[]string{"!wat", "!wat full", "!wat raidcp"},
+		[]string{"!wat", "!wat full", "!wat raidcp"}, true,
 		PrintInfoToDiscord,
+	},
+	{"coords", "!coords {lat, long}",
+		"Get a link to google maps for coordinates",
+		[]string{"!coords 43.24124,-76.14241"}, false,
+		PrintCoordsToDiscord,
 	},
 }
 
@@ -258,6 +268,9 @@ func PrintInfoToDiscord(b *botResponse) error {
 		AddField("Commands", Example(INFO_FORMAT))
 		
 	for _, cmd := range cmdMap {
+		if !cmd.Print {
+			continue
+		}
 		if len(b.fields) == 1 {
 			emb.AddField("!"+cmd.Name, Example(cmd.Format))
 			continue
@@ -538,6 +551,23 @@ func PrintTypeChartToDiscord(b *botResponse) error {
 	} else {
 		return &botError{ERR_POKEMON_TYPE_UNRECOGNIZED, b.fields[1]}
 	}
+	return nil
+}
+
+// PrintCoordsToDiscord prints a Pokego++ link to the coords
+func PrintCoordsToDiscord(b *botResponse) error {
+	if len(b.fields) < 2 {
+		return &botError{ERR_COORDS_COMMAND, ""}
+	}
+	
+	c := config.BotPrefix + "coords"
+	coords := strings.Replace(strings.Replace(strings.Join(b.fields, ""), c, "", 1), " ", "", -1)
+	fmt.Println(coords)
+	
+	link := POKEGO_URL + coords
+	
+	b.PrintToDiscord(link)
+	
 	return nil
 }
 
