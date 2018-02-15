@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/haynesherway/pogo"
+	"io"
 	"log"
+	"os"
+	"net/http"
 	"strconv"
 	"strings"
 )
@@ -214,6 +217,11 @@ func Start() {
 		err = goBot.UpdateStatus(0, "!haynes-bot")
 		if err != nil {
 			fmt.Println("Unable to update status: ", err.Error())
+		}
+		
+		if UseImages {
+			//Start Image Server
+			http.Handle("/img", http.FileServer(http.Dir(ImageServer)))
 		}
 
 		fmt.Println("Bot is running!")
@@ -510,32 +518,54 @@ func PrintRaidChartToDiscord(b *botResponse) error {
 	pokemonName := strings.ToLower(b.fields[1])
 
 	if p, err := pogo.GetPokemon(pokemonName); err == nil {
-		chart := p.GetRaidCPChart()
-		rows := strings.Split(chart, "\n")
-		emb := NewEmbed().
-			SetColor(0x9013FE).
-			AddField("Raid Chart", Example(strings.Join(rows[:40], "\n")))
+		ivList, chart := p.GetRaidCPChart()
+		if UseImages {
+			imgName := fmt.Sprintf("RAIDCHART-%s.png", p.Name)
+			//if ImageExists(imgName) {
+			if ImageExists("poop") {
+					f, err := os.Open(ImageServer + "/" + imgName)
+					if err != nil {
+						fmt.Println(err.Error())
+					}
+					b.SendImageToDiscord(imgName, f)
+				} else {
+					GetTable(ivList, imgName)
+					
+					f, err := os.Open(ImageServer + "/" + imgName)
+					if err != nil {
+						fmt.Println(err.Error())
+					}
+					
+					b.SendImageToDiscord(imgName, f)
+				} 
 			
-			if len(b.fields) > 2 {
-				if strings.ToLower(b.fields[2]) == "full" {
-					rowCount := len(rows)
-					st, en := 41, 80
-					for {
-						if en > rowCount {
-							en = rowCount
+		} else {
+			rows := strings.Split(chart, "\n")
+			emb := NewEmbed().
+				SetColor(0x9013FE).
+				AddField("Raid Chart", Example(strings.Join(rows[:40], "\n")))
+				
+				if len(b.fields) > 2 {
+					if strings.ToLower(b.fields[2]) == "full" {
+						rowCount := len(rows)
+						st, en := 41, 80
+						for {
+							if en > rowCount {
+								en = rowCount
+							}
+							emb.AddField("Continued", Example(strings.Join(rows[st:en], "\n")))
+							
+							if en == rowCount || en > 200 {
+								break
+							}
+							st+=40
+							en+=40
 						}
-						emb.AddField("Continued", Example(strings.Join(rows[st:en], "\n")))
-						
-						if en == rowCount || en > 200 {
-							break
-						}
-						st+=40
-						en+=40
 					}
 				}
-			}
-			emb.SetAuthor(p.Name, p.API.Sprites.Front)
-			b.PrintEmbedToDiscord(emb.MessageEmbed)
+				emb.SetAuthor(p.Name, p.API.Sprites.Front)
+				b.PrintEmbedToDiscord(emb.MessageEmbed)
+		}
 	} else {
 		return &botError{ERR_POKEMON_UNRECOGNIZED, b.fields[1]}
 	}
@@ -563,17 +593,34 @@ func PrintRaidCPToDiscord(b *botResponse) error {
 			if err != nil {
 				return &botError{ERR_RAIDCP_COMMAND, ""}
 			}
-			ivChart :=p.GetRaidIV(cp)
-			if len(ivChart) == 0 {
-				return &botError{ERR_NO_COMBINATIONS, p.Name}
-			} else {
-				emb := NewEmbed().
-				SetColor(0x9013FE).
-				AddField(fmt.Sprintf("CP: %d", cp), Example(ivChart)).
-				SetAuthor(p.Name, p.API.Sprites.Front).MessageEmbed
-				//SetImage(p.API.Sprites.Front).MessageEmbed
-				b.PrintEmbedToDiscord(emb)
-			}
+			//imgName := fmt.Sprintf("RAID-%s-%d.png", p.Name, cp)
+			_, ivChart := p.GetRaidIV(cp)
+			/*if UseImages {
+				//imgName := fmt.Sprintf("RAID-%s-%d", p.Name, cp)
+				//imgName := "draw.png"
+				if ImageExists(imgName) {
+					f, err := os.Open(ImageServer + "/" + imgName)
+					if err != nil {
+						fmt.Println(err.Error())
+					}
+					b.SendImageToDiscord(imgName, f)
+				} else {
+					file := GetTable(ivList, imgName)
+					
+					b.SendImageToDiscord(imgName, file)
+				} 
+			} else {*/
+				if len(ivChart) == 0 {
+					return &botError{ERR_NO_COMBINATIONS, p.Name}
+				} else {
+					emb := NewEmbed().
+					SetColor(0x9013FE).
+					AddField(fmt.Sprintf("CP: %d", cp), Example(ivChart)).
+					SetAuthor(p.Name, p.API.Sprites.Front).MessageEmbed
+					//SetImage(p.API.Sprites.Front).MessageEmbed
+					b.PrintEmbedToDiscord(emb)
+				}
+			//}
 		}
 	} else {
 		return &botError{ERR_POKEMON_UNRECOGNIZED, b.fields[1]}
@@ -677,6 +724,10 @@ func PrintCoordsToDiscord(b *botResponse) error {
 	return nil
 }
 
+func (b *botResponse) SendImageToDiscord(fileName string, r io.Reader) {
+	_, _ = b.s.ChannelFileSend(b.m.ChannelID, fileName, r)
+	return
+}
 // PrintToDiscord prints the message string to discord
 func (b *botResponse) PrintToDiscord(msg string) {
 	_, _ = b.s.ChannelMessageSend(b.m.ChannelID, msg)
@@ -724,6 +775,13 @@ func (e *botError) Error() string {
 		return fmt.Sprintf("Invalid role: %s", e.value)
 	}
 	return e.err.Error()
+}
+
+func ImageExists(name string) bool {
+	if _, err := os.Stat(ImageServer + "/" + name); err != nil {
+	  return false
+	}
+	return true
 }
 
 func init() {
