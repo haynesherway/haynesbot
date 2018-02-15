@@ -521,8 +521,7 @@ func PrintRaidChartToDiscord(b *botResponse) error {
 		ivList, chart := p.GetRaidCPChart()
 		if UseImages {
 			imgName := fmt.Sprintf("RAIDCHART-%s.png", p.Name)
-			//if ImageExists(imgName) {
-			if ImageExists("poop") {
+			if ImageExists(imgName) {
 					f, err := os.Open(ImageServer + "/" + imgName)
 					if err != nil {
 						fmt.Println(err.Error())
