@@ -94,7 +94,7 @@ var botCommands = []BotCommand{
 	{"raidiv", "!raidiv [pokemon] {cp}",
 		"Get possible IV combinations for specified raid pokemon with specified IV",
 		[]string{"!raidcp kyogre 2292", "!raidcp groudon"}, true,
-		[]string{"raidcp"},
+		[]string{"raidcp", "eggcp", "eggiv"},
 		PrintRaidCPToDiscord,
 	},
 	{"raidchart", "!raidchart [pokemon] {'full'}",
