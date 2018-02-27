@@ -1,0 +1,18 @@
+{
+  "GuildSettings": [
+    {
+      "Name": "GuildName",
+      "ID": "ID",
+      "Managed": true,
+      "Teams": true,
+      "Prefix": "$"
+    },
+    {
+      "Name": "HaynesBot",
+      "ID": "418062356313145344",
+      "Managed": true,
+      "Teams": false,
+      "Prefix": "?"
+    }
+  ]
+}
