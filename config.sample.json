@@ -1,4 +1,11 @@
 {
     "Token": "{BOT TOKEN HERE}",
-    "BotPrefix": "!"
+    "BotPrefix": "!",
+    "TestToken": "{BOT TOKEN HERE}",
+    "TestPrefix": "?",
+    "ManagedGuilds": [
+        "{GUILD ID HERE}"
+    ],
+    "Images": false,
+    "ImageServer": "{LOCATION OF IMAGE DIR HERE}"
 }

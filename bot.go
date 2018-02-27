@@ -13,6 +13,7 @@ import (
 	"strings"
 )
 
+// BotID for discord
 var (
 	BotID string
 	goBot *discordgo.Session
@@ -146,6 +147,7 @@ var botCommands = []BotCommand{
 
 var INFO_FORMAT = "!cmd [required] [fields|options] {optional}"
 
+// PrintInfo prints the info for a discord command
 func (cmd *BotCommand) PrintInfo() string {
 	examples := Example(cmd.Format)
 	for _, ex := range cmd.Example {
@@ -173,19 +175,6 @@ func (b *botResponse) GetCommand() (cmd *BotCommand) {
 		b.err = ERR_COMMAND_UNRECOGNIZED
 		return cmd
 	}
-}
-
-func (b *botResponse) GetCommandName() string {
-	if len(b.fields) == 0 {
-		b.err = ERR_COMMAND_UNRECOGNIZED
-		return ""
-	}
-	cmd := strings.ToLower(strings.Replace(b.fields[0], config.BotPrefix, "", 1))
-	return cmd
-}
-
-func NilFunc(b *botResponse) error {
-	return nil
 }
 
 // Start starts the bot
@@ -293,6 +282,7 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 }
 
+// AddGuild adds a guild to the guild management and checks for requirements
 func AddGuild(b *botResponse) error {
 	channel, err := b.s.Channel(b.m.ChannelID)
 	if err != nil {
@@ -320,7 +310,7 @@ func AddGuild(b *botResponse) error {
 	return nil
 }
 
-//AssignTeam assigns one of three teams (mystic,valor,instinct)
+// AssignTeam assigns one of three teams (mystic,valor,instinct)
 func AssignTeam(b *botResponse) error {
 	if len(b.fields) < 2 {
 		return &botError{ERR_NO_TEAM, ""}
@@ -374,14 +364,14 @@ func AssignTeam(b *botResponse) error {
 	return nil
 }
 
-//PrintInfoToDiscord prints the bot info to discord
+// PrintInfoToDiscord prints the bot info to discord
 func PrintInfoToDiscord(b *botResponse) error {
 	emb := NewEmbed().
 		//SetTitle("Haynes Bot Commands").
 		SetColor(0x00ff00).
 		AddField("Commands", Example(INFO_FORMAT))
 		
-	for _, cmd := range cmdMap {
+	for _, cmd := range botCommands {
 		if !cmd.Print {
 			continue
 		}
@@ -399,7 +389,7 @@ func PrintInfoToDiscord(b *botResponse) error {
 	return nil
 }
 
-//PrintIVToDiscord prints the IV data to discord
+// PrintIVToDiscord prints the IV data to discord
 func PrintIVToDiscord(b *botResponse) error {
 	if len(b.fields) < 3 {
 		return &botError{ERR_IV_COMMAND, ""}
@@ -724,10 +714,12 @@ func PrintCoordsToDiscord(b *botResponse) error {
 	return nil
 }
 
+// SendImageToDiscord sends an image as a file attachment to discord
 func (b *botResponse) SendImageToDiscord(fileName string, r io.Reader) {
 	_, _ = b.s.ChannelFileSend(b.m.ChannelID, fileName, r)
 	return
 }
+
 // PrintToDiscord prints the message string to discord
 func (b *botResponse) PrintToDiscord(msg string) {
 	_, _ = b.s.ChannelMessageSend(b.m.ChannelID, msg)
@@ -777,6 +769,7 @@ func (e *botError) Error() string {
 	return e.err.Error()
 }
 
+// ImageExists checks if an image exists in the image server folder
 func ImageExists(name string) bool {
 	if _, err := os.Stat(ImageServer + "/" + name); err != nil {
 	  return false
