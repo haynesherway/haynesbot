@@ -29,6 +29,7 @@ type configStruct struct {
 	Images bool `json:"Images"`
 	ImageServer string `json:"ImageServer"`
 	GuildFile string `json:"GuildSettings"`
+	TestGuildFile string `json:"TestGuildSettings"`
 }
 
 func ReadConfig() error {
@@ -49,15 +50,16 @@ func ReadConfig() error {
 		log.Println(err.Error())
 		return err
 	}
-	
-	ReadGuildSettings(config.GuildFile)
 
 	if test {
 		log.Println("Running test version...")
 
 		config.Token = config.TestToken
 		config.BotPrefix = config.TestPrefix
+		config.GuildFile = config.TestGuildFile
 	}
+	
+	ReadGuildSettings(config.GuildFile)
 
 	TestToken = config.TestToken
 	Token = config.Token

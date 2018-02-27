@@ -287,6 +287,8 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 	
+	guild.Update()
+	
 	prefix := guild.Settings.BotPrefix
 	
 	if !strings.HasPrefix(m.Content, prefix) {

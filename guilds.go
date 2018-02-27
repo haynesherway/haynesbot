@@ -64,9 +64,6 @@ func InitGuilds(state *discordgo.State) error {
         }
         
         guildSettings.add(guild).save(config.GuildFile)
-        if guild.Settings.Managed {
-            ManagedGuilds = append(ManagedGuilds, guild.ID)
-        }
     }
 
     return nil
@@ -74,15 +71,25 @@ func InitGuilds(state *discordgo.State) error {
 
 func NewGuild(guild *discordgo.Guild) *Guild {
     botGuild := &Guild{guild, GuildSetting{
-                Name: guild.Name,
                 ID: guild.ID,
                 Managed: false,
                 Teams: false,
                 BotPrefix: config.BotPrefix,
             }}
+            
+            if guild.Name != "" {
+                botGuild.Settings.Name = guild.Name
+            }
             Guilds[guild.ID] = botGuild
             
             return botGuild
+}
+
+func (guild *Guild) Update() error {
+    if guild.Settings.Name == "" { 
+        return guildSettings.add(guild).save(config.GuildFile)
+    }
+    return nil
 }
 
 func (guild *Guild) SetPrefix(pre string) error {
@@ -282,6 +289,7 @@ func IsValidTeam(s string) bool {
 
 func ReadGuildSettings(f string) error {
     Guilds = make(map[string]*Guild)
+    guildSettings = &GuildSettings{}
     
     file, err := ioutil.ReadFile(f)
 	if err != nil {
@@ -303,7 +311,9 @@ func ReadGuildSettings(f string) error {
 }
 
 func (gs *GuildSettings) add(g *Guild) *GuildSettings {
-    g.Settings.Name = g.Name
+    if g.Name != "" {
+        g.Settings.Name = g.Name
+    }
     for i, s := range gs.GuildSettings {
         if s.ID == g.ID {
             gs.GuildSettings[i] = g.Settings
@@ -319,6 +329,8 @@ func (gs *GuildSettings) save(file string) error {
     if err != nil {
        return err 
     }
+    
+    log.Println("Writing to guild settings file...")
     
     return ioutil.WriteFile(file, out, 0600)
 }
