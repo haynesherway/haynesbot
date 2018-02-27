@@ -106,6 +106,7 @@ func GetTable(p *pogo.Pokemon, data interface{}, fileName string) *os.File {
     table.Options.SetRowHeight(15)
     table.Options.SetFontSize(10)
     table.Options.SetBorderColor(BLACK)
+    table.Options.SetBorder(1)
     
     if ivList, ok := data.([]pogo.IVStat); ok {
         table.SetHeaders([]string{"IV%", "A", "D", "S", "CP@20", "CP@25"}).SetColor(WHITE)

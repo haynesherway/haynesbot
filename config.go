@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
-	"fmt"
 	"io/ioutil"
+	"log"
 	"path"
 	"runtime"
 )
@@ -14,7 +14,6 @@ var (
 	Token     string
 	TestToken string
 	BotPrefix string
-	ManagedGuilds []string
 	UseImages bool
 	ImageServer string
 	test      bool
@@ -27,13 +26,13 @@ type configStruct struct {
 	BotPrefix string `json:"BotPrefix"`
 	TestToken string `json:"TestToken"`
 	TestPrefix string `json:"TestPrefix"`
-	ManagedGuilds []string `json:"ManagedGuilds"`
 	Images bool `json:"Images"`
 	ImageServer string `json:"ImageServer"`
+	GuildFile string `json:"GuildSettings"`
 }
 
 func ReadConfig() error {
-	fmt.Println("Reading from config file...")
+	log.Println("Reading from config file...")
 
 	_, filename, _, ok := runtime.Caller(1)
 	if !ok {
@@ -41,18 +40,20 @@ func ReadConfig() error {
 	}
 	file, err := ioutil.ReadFile(path.Join(path.Dir(filename), "../config.json"))
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 		return err
 	}
 
 	err = json.Unmarshal(file, &config)
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 		return err
 	}
+	
+	ReadGuildSettings(config.GuildFile)
 
 	if test {
-		fmt.Println("Running test version...")
+		log.Println("Running test version...")
 
 		config.Token = config.TestToken
 		config.BotPrefix = config.TestPrefix
@@ -61,7 +62,6 @@ func ReadConfig() error {
 	TestToken = config.TestToken
 	Token = config.Token
 	BotPrefix = config.BotPrefix
-	ManagedGuilds = config.ManagedGuilds
 	UseImages = config.Images
 	ImageServer = config.ImageServer
 

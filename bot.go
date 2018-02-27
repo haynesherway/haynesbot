@@ -29,6 +29,9 @@ var (
 	ERR_MOVES_COMMAND        = errors.New("Moves command needs to be formatted like this: !moves {pokemon}")
 	ERR_TYPES_COMMAND        = errors.New("Types command needs to be formatted like this: !type {pokemon}")
 	ERR_TYPECHART_COMMAND    = errors.New("Effect command needs to be formatted like this: !effect {pokemon}")
+	ERR_PREFIX_COMMAND		 = errors.New("Set the prefix for your guild using !setprefix {prefix}. Max 2 characters.")
+	ERR_WELCOME_COMMAND		= errors.New("Set the welcome message for your server using !setwelcome {message}")
+	ERR_GOODBYE_COMMAND		= errors.New("Set the goodbye message for your server using !setgoodbye {message}")
 	ERR_NO_COMBINATIONS      = errors.New("No possible IV combinations for that CP")
 	ERR_NO_STATS             = errors.New("Pokemon Master file doesn't have stats for that pokemon yet :(")
 	ERR_POKEMON_UNRECOGNIZED = errors.New("Pokemon not recognized.")
@@ -39,6 +42,7 @@ var (
 	ERR_NO_CHANNEL = errors.New("Unable to get Channel ID")
 	ERR_NO_GUILD = errors.New("Unable to get Guild ID")
 	ERR_NO_TEAM = errors.New("No team provided.")
+	ERR_NOT_OWNER = errors.New("Only the server owner can use that command :)")
 	
 	ERR_MISSING_ROLE = errors.New("Missing role.")
 	ERR_INVALID_ROLE = errors.New("Invalid role.")
@@ -73,6 +77,7 @@ type BotCommand struct {
 }
 
 var cmdMap map[string]BotCommand
+var cmdList map[string]BotCommand
 var botCommands = []BotCommand{
 	{"iv", "!iv [pokemon] [cp] {level|stardust} {adh}",
 		"Get possible IVs of a pokemon", 
@@ -140,18 +145,30 @@ var botCommands = []BotCommand{
 		[]string{},
 		AssignTeam,
 	},
-	{"add", "!add", "Add this guild to state",
+	{"add", "!add", "Add this guild to management",
 		[]string{}, false, []string{}, AddGuild,
+	},
+	{"setprefix", "!setprefix {prefix string}", "Change bot prefix for server", 
+		[]string{}, false, []string{},
+		SetBotPrefix,
+	},
+	{"setwelcome", "!setwelcome {message}", "Set welcome message for server",
+		[]string{}, false, []string{},
+		SetWelcome,
+	},
+	{"setgoodbye", "!setgoodbye {message}", "Set goodbye message for server",
+		[]string{}, false, []string{},
+		SetGoodbye,
 	},
 }
 
 var INFO_FORMAT = "!cmd [required] [fields|options] {optional}"
 
 // PrintInfo prints the info for a discord command
-func (cmd *BotCommand) PrintInfo() string {
-	examples := Example(cmd.Format)
+func (cmd *BotCommand) PrintInfo(prefix string) string {
+	examples := Example(strings.Replace(cmd.Format, "!", prefix, 1))
 	for _, ex := range cmd.Example {
-		examples += Example(ex)
+		examples += Example(strings.Replace(ex, "!", prefix, 1))
 	}
 	return fmt.Sprintln(cmd.Info, examples)
 }
@@ -162,13 +179,13 @@ func NewBotResponse(s *discordgo.Session, m *discordgo.MessageCreate, fields []s
 }
 
 // GetCommand gets the BotCommand for the input
-func (b *botResponse) GetCommand() (cmd *BotCommand) {
+func (b *botResponse) GetCommand(prefix string) (cmd *BotCommand) {
 	if len(b.fields) == 0 {
 		b.err = ERR_COMMAND_UNRECOGNIZED
 		return cmd
 	}
 	
-	name := strings.ToLower(strings.Replace(b.fields[0], config.BotPrefix, "", 1))
+	name := strings.ToLower(strings.Replace(b.fields[0], prefix, "", 1))
 	if c, ok := cmdMap[name]; ok {
 		return &c
 	} else {
@@ -202,6 +219,12 @@ func Start() {
 			fmt.Println(err.Error())
 			return
 		}
+		
+		log.Println("Adding active guilds...")
+		err = InitGuilds(goBot.State)
+		if err != nil {
+			log.Println(err.Error)
+		}
 
 		err = goBot.UpdateStatus(0, "!haynes-bot")
 		if err != nil {
@@ -213,22 +236,21 @@ func Start() {
 			http.Handle("/img", http.FileServer(http.Dir(ImageServer)))
 		}
 
-		fmt.Println("Bot is running!")
+		log.Println("Bot is running!")
 }
 
 func welcomeHandler(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
-	if !IsManaged(m.GuildID) {
+	guild, ok := Guilds[m.GuildID];
+	if !ok {
 		return
 	}
 	
-	g, err := s.Guild(m.GuildID)
-	if err != nil {
+	if !guild.IsManaged() {
 		return
 	}
 	
-	guild := Guild{g}
 	
-	err = guild.PrintWelcome(m.User)
+	err := guild.PrintWelcome(m.User)
 	if err != nil {
 		log.Println(err)
 	}
@@ -237,18 +259,16 @@ func welcomeHandler(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
 }
 
 func goodbyeHandler(s *discordgo.Session, m *discordgo.GuildMemberRemove) {
-	if !IsManaged(m.GuildID) {
+	guild, ok := Guilds[m.GuildID];
+	if !ok {
 		return
 	}
 	
-	g, err := s.Guild(m.GuildID)
-	if err != nil {
+	if !guild.IsManaged() {
 		return
 	}
 	
-	guild := Guild{g}
-	
-	err = guild.PrintGoodbye(m.User)
+	err := guild.PrintGoodbye(m.User)
 	if err != nil {
 		log.Println(err)
 	}
@@ -257,7 +277,19 @@ func goodbyeHandler(s *discordgo.Session, m *discordgo.GuildMemberRemove) {
 }
 
 func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
-	if !strings.HasPrefix(m.Content, config.BotPrefix) {
+	channel, err := s.Channel(m.ChannelID)
+	if err != nil {
+		return
+	}
+	
+	guild, ok := Guilds[channel.GuildID]
+	if !ok {
+		return
+	}
+	
+	prefix := guild.Settings.BotPrefix
+	
+	if !strings.HasPrefix(m.Content, prefix) {
 		return
 	}
 
@@ -265,15 +297,15 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 	
-	fmt.Println(m.Content)
+	log.Println(m.Content)
 
 	bot := NewBotResponse(s, m, strings.Fields(m.Content))
-	cmd := bot.GetCommand()
+	cmd := bot.GetCommand(prefix)
 	if bot.err != nil {
 		return
 	}
 	
-	err := cmd.Do(bot)
+	err = cmd.Do(bot)
 	if err != nil {
 			bot.PrintErrorToDiscord(err)
 		}
@@ -289,24 +321,68 @@ func AddGuild(b *botResponse) error {
 		return &botError{ERR_NO_CHANNEL, ""}
 	}
 	
-	if !IsManaged(channel.GuildID) {
-		return &botError{ERR_NOT_MANAGED, ""}
+	guild, ok := Guilds[channel.GuildID];
+	if !ok {
+		g, err := b.s.Guild(channel.GuildID)
+		if err != nil {
+			return &botError{ERR_NO_GUILD, ""}
+		}
+		
+		guild = NewGuild(g)
 	}
 	
-	g, err := b.s.Guild(channel.GuildID)
+	guild.Manage(true)
+	
+	if len(b.fields) > 1 {
+		if b.fields[1] == "teams" {
+			// Check Roles
+			err = guild.CheckRoles()
+			if err != nil {
+				return &botError{err, ""}
+			}
+			guild.ManageTeams(true)
+		}
+	}
+	
+	guild.Manage(true)
+	
+	b.PrintToDiscord("Guild management added!")
+	
+	return nil
+}
+
+// SetBotPrefix sets a bot prefix other than "!" for a certain guild
+func SetBotPrefix(b *botResponse) error {
+	channel, err := b.s.Channel(b.m.ChannelID)
 	if err != nil {
-		return &botError{ERR_NO_GUILD, ""}
+		return &botError{ERR_NO_CHANNEL, ""}
 	}
 	
-	guild := Guild{g}
-	
-	// Check Roles
-	err = guild.CheckRoles()
-	if err != nil {
-		return &botError{err, ""}
+	guild, ok := Guilds[channel.GuildID];
+	if !ok {
+		g, err := b.s.Guild(channel.GuildID)
+		if err != nil {
+			return &botError{ERR_NO_GUILD, ""}
+		}
+		
+		guild = NewGuild(g)
 	}
-	b.s.State.GuildAdd(guild.Guild)
 	
+	if !guild.IsOwner(b.m.Author) {
+		return &botError{ERR_NOT_OWNER, ""}
+	}
+	
+	if len(b.fields) > 1 {
+		prefix := b.fields[1]
+		if len(prefix) > 2 {
+			return &botError{ERR_PREFIX_COMMAND, ""}
+		}
+		guild.SetPrefix(prefix)
+		
+		b.PrintToDiscord("Haynesbot prefix successfully changed to " + prefix)
+	} else {
+		return &botError{ERR_PREFIX_COMMAND, ""}
+	}
 	return nil
 }
 
@@ -332,21 +408,24 @@ func AssignTeam(b *botResponse) error {
 		}
 	}
 	
-	if !IsManaged(channel.GuildID) {
-		return &botError{ERR_NOT_MANAGED, ""}
-	}
-	
 	// Attempt to get the guild from the state
-	// If error, fall back to restapi
-	g, err := b.s.State.Guild(channel.GuildID)
-	if err != nil {
-		g, err = b.s.Guild(channel.GuildID)
+	guild, ok := Guilds[channel.GuildID];
+	if !ok {
+		g, err := b.s.Guild(channel.GuildID)
 		if err != nil {
 			return &botError{ERR_NO_GUILD, ""}
 		}
+		
+		guild = NewGuild(g)
 	}
 	
-	guild := Guild{g}
+	if !guild.IsManaged() {
+		return &botError{ERR_NOT_MANAGED, ""}
+	}
+	
+	if !guild.TeamsManaged() {
+		return &botError{ERR_NOT_MANAGED, ""}
+	}
 	
 	// Remove all team roles
 	err = guild.RemoveAllTeams(b.s, b.m.Author.ID)
@@ -364,26 +443,111 @@ func AssignTeam(b *botResponse) error {
 	return nil
 }
 
+// SetWelcome allows the server owner to set a welcome message
+func SetWelcome(b *botResponse) error {
+	channel, err := b.s.Channel(b.m.ChannelID)
+	if err != nil {
+		return &botError{ERR_NO_CHANNEL, ""}
+	}
+	
+	guild, ok := Guilds[channel.GuildID];
+	if !ok {
+		g, err := b.s.Guild(channel.GuildID)
+		if err != nil {
+			return &botError{ERR_NO_GUILD, ""}
+		}
+		
+		guild = NewGuild(g)
+	}
+	
+	if !guild.IsManaged() {
+		return &botError{ERR_NOT_MANAGED, ""}
+	}
+	
+	if !guild.IsOwner(b.m.Author) {
+		return &botError{ERR_NOT_OWNER, ""}
+	}
+	
+	if len(b.fields) > 1 {
+		welcome := strings.Join(b.fields[1:], " ")
+		guild.SetWelcome(welcome)
+		
+		b.PrintToDiscord("Welcome message set!")
+	} else {
+		return &botError{ERR_WELCOME_COMMAND, ""}
+	}
+
+	return nil
+}
+
+// SetGoodbye allows the server owner to set a goodbye message
+func SetGoodbye(b *botResponse) error {
+	channel, err := b.s.Channel(b.m.ChannelID)
+	if err != nil {
+		return &botError{ERR_NO_CHANNEL, ""}
+	}
+	
+	guild, ok := Guilds[channel.GuildID];
+	if !ok {
+		g, err := b.s.Guild(channel.GuildID)
+		if err != nil {
+			return &botError{ERR_NO_GUILD, ""}
+		}
+		
+		guild = NewGuild(g)
+	}
+	
+	if !guild.IsManaged() {
+		return &botError{ERR_NOT_MANAGED, ""}
+	}
+	
+	if !guild.IsOwner(b.m.Author) {
+		return &botError{ERR_NOT_OWNER, ""}
+	}
+	
+	if len(b.fields) > 1 {
+		goodbye := strings.Join(b.fields[1:], " ")
+		guild.SetGoodbye(goodbye)
+		b.PrintToDiscord("Goodbye message set!")
+	} else {
+		return &botError{ERR_GOODBYE_COMMAND, ""}
+	}
+
+	return nil
+}
+
 // PrintInfoToDiscord prints the bot info to discord
 func PrintInfoToDiscord(b *botResponse) error {
+	channel, err := b.s.Channel(b.m.ChannelID)
+	if err != nil {
+		return &botError{ERR_NO_CHANNEL, ""}
+	}
+	
+	guild, ok := Guilds[channel.GuildID];
+	if !ok {
+		return &botError{ERR_NO_GUILD, ""}
+	}
+	
+	prefix := guild.Settings.BotPrefix
+	
 	emb := NewEmbed().
 		//SetTitle("Haynes Bot Commands").
 		SetColor(0x00ff00).
-		AddField("Commands", Example(INFO_FORMAT))
+		AddField("Commands", Example(strings.Replace(INFO_FORMAT, "!", prefix, 1)))
 		
-	for _, cmd := range botCommands {
+	for _, cmd := range cmdList {
 		if !cmd.Print {
 			continue
 		}
 		if len(b.fields) == 1 {
-			emb.AddField("!"+cmd.Name, Example(cmd.Format))
+			emb.AddField(prefix+cmd.Name, Example(strings.Replace(cmd.Format, "!", prefix, 1)))
 			continue
 		} else if len(b.fields) > 1 {
 			if strings.ToLower(b.fields[1]) != cmd.Name && strings.ToLower(b.fields[1]) != "full" {
 				continue
 			}
 		}
-		emb.AddField("!"+cmd.Name, cmd.PrintInfo())
+		emb.AddField(prefix+cmd.Name, cmd.PrintInfo(prefix))
 	}
 	b.PrintEmbedToDiscord(emb.MessageEmbed)
 	return nil
@@ -749,8 +913,16 @@ type botError struct {
 	value string
 }
 
+var silentErrors = []error{ERR_NO_CHANNEL, ERR_NOT_MANAGED, ERR_NO_GUILD}
 // Error formats the error message for printing
 func (e *botError) Error() string {
+	for _, se := range silentErrors {
+		if e.err == se {
+			log.Println(e.err)
+			return ""
+		}
+	}
+	
 	if e.err == ERR_POKEMON_UNRECOGNIZED && e.value != "" {
 		return fmt.Sprintf("Pokemon unrecognized: %s", e.value)
 	} else if e.err == ERR_POKEMON_TYPE_UNRECOGNIZED && e.value != "" {
@@ -759,8 +931,6 @@ func (e *botError) Error() string {
 		return fmt.Sprintf("No possible IV combinations for that CP for %s", e.value)
 	} else if e.err == ERR_NO_STATS && e.value != "" {
 		return fmt.Sprintf("No stats available for %s in the Pokemon Go Master file yet :(", e.value)
-	} else if e.err == ERR_NOT_MANAGED {
-		return ""
 	} else if e.err == ERR_MISSING_ROLE && e.value != "" {
 		return fmt.Sprintf("Missing role: %s", e.value)
 	} else if e.err == ERR_INVALID_ROLE && e.value != "" {
@@ -778,8 +948,10 @@ func ImageExists(name string) bool {
 }
 
 func init() {
+	cmdList = make(map[string]BotCommand)
 	cmdMap = make(map[string]BotCommand)
 	for _, cmd := range botCommands {
+		cmdList[cmd.Name] = cmd
 		cmdMap[cmd.Name] = cmd
 		if len(cmd.Aliases) > 0 {
 			for _, alias := range cmd.Aliases {
