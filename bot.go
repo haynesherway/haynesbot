@@ -597,11 +597,20 @@ func PrintIVToDiscord(b *botResponse) error {
 	}
 
 	if p, err := pogo.GetPokemon(pokemonName); err == nil {
-		ivChart := p.GetIV(cp, level, stardust, bestvals)
+		stats, ivChart := p.GetIV(cp, level, stardust, bestvals)
 		if len(ivChart) == 0 {
 			return &botError{ERR_NO_COMBINATIONS, p.Name}
 		} else {
-			b.PrintToDiscord(ivChart)
+			emb := NewEmbed().
+					SetColor(0x9013FE).
+					AddField(fmt.Sprintf("CP: %d", cp), Example(ivChart)).
+					SetAuthor(p.Name, p.API.Sprites.Front)
+					//SetImage(p.API.Sprites.Front).MessageEmbed
+			if len(stats) > 30 {
+				emb.SetDescription("Full chart too long to display, displaying first 30 rows. \nAdd more data to limit results.")
+			}
+			b.PrintEmbedToDiscord(emb.MessageEmbed)
+			//b.PrintToDiscord(ivChart)
 		}
 	} else {
 		return &botError{ERR_POKEMON_UNRECOGNIZED, b.fields[1]}
