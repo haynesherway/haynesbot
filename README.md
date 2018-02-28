@@ -13,10 +13,10 @@ A discord bot that does pokemon go related things, like calculate IVs
 * **!maxcp** {pokemon}  
 		Get maximum CP of a pokemon with perfect IVs at level 40  
 		Example: !maxcp latios  
-* **!raidcp** {pokemon}  
+* **!raidiv** {pokemon}  
 		Get range of possible raid CPs for specified pokemon  
 		Example: !raidcp groudon  
-* **!raidcp** {pokemon} {cp}  
+* **!raidiv** {pokemon} {cp}  
 		Get possible IV combinations for specified raid pokemon with specified IV  
 		Example: !raidcp kyogre 2292  
 * **!raidchart** {pokemon}  
@@ -49,11 +49,31 @@ You will need to put your discord bot token in the config.json file
 
 !raidiv (!raidcp)
 
-<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/raidiv.png?raw=true" width="500" height="484" title="RaidIV">
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/raidiv.png?raw=true" width="300" height="290" title="RaidIV">
 
 !iv
 
-<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/iv.png?raw=true" width="500" height="537" title="IV">
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/iv.png?raw=true" width="300" height="322" title="IV">
+
+!maxcp
+
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/maxcp.png?raw=true" width="300" height="236" title="IV">
+
+!moves
+
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/moves.png?raw=true" width="500" height="235" title="IV">
+
+!effect pokemon
+
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/effect.png?raw=true" width="500" height="285" title="IV">
+
+!effect type
+
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/effecttype.png?raw=true" width="500" height="282" title="IV">
+
+!type
+
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/type.png?raw=true" width="300" height="225" title="IV">
 
 !raidchart rayquaza
 
