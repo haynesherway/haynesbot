@@ -40,4 +40,5 @@ You will need to put your discord bot token in the config.json file
 ## Examples
 
 !raidchart rayquaza
+
 ![Raidchart Rayquaza](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Rayquaza.png?raw=true)
