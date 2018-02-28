@@ -37,3 +37,7 @@ A discord bot that does pokemon go related things, like calculate IVs
 
 You will need to put your discord bot token in the config.json file
 
+## Examples
+
+!raidchart rayquaza
+![Raidchart Rayquaza](https://github.com/haynesherway/haynesbot/blob/master/RAIDCHART-Rayquaza.png?raw=true)
