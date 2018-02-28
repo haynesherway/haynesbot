@@ -35,6 +35,26 @@ Calculations and pokemon data come from [haynesherway/pogo](https://www.github.c
 * **!effect** {pokemon|type}  
 		Get a list of type relations a specified pokemon or type has  
 		Example: !effect pikachu or !effect electric  
+		
+## Server Owner Commands:
+
+* **!add**  
+		Add server management capabilities
+* **!add teams**  
+		Add pokemon go team management
+* **!setprefix** {prefix}  
+		Set prefix other than ! for your server  
+		Example: !setprefix $
+* **!setwelcome** {message}  
+		Set welcome message for when new members join your server  
+		You can mention user with {mention}, print username with {user} and print server name with {guild}  
+		Requires a channel #welcome  
+		Example: !setwelcome Welcome to {guild}, {mention}!  
+* **!setgoodbye** {message}  
+		Set goodbye message for when users leave your guild  
+		You can mention user with {mention}, print username with {user} and print server name with {guild}  
+		Requires a channel #welcome  
+		Example: !setgoodbye Goodbye {user}, we won't miss you!  
 
 
 ## Configuration
