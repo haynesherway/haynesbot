@@ -47,18 +47,6 @@ You will need to put your discord bot token in the config.json file
 
 <img src="https://github.com/haynesherway/haynesbot/blob/master/examples/watdetail.png?raw=true" width="500" height="354" title="WatIV">
 
-!raidiv (!raidcp)
-
-<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/raidiv.png?raw=true" width="300" height="290" title="RaidIV">
-
-!iv
-
-<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/iv.png?raw=true" width="300" height="322" title="IV">
-
-!maxcp
-
-<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/maxcp.png?raw=true" width="300" height="236" title="IV">
-
 !moves
 
 <img src="https://github.com/haynesherway/haynesbot/blob/master/examples/moves.png?raw=true" width="500" height="235" title="IV">
@@ -71,10 +59,26 @@ You will need to put your discord bot token in the config.json file
 
 <img src="https://github.com/haynesherway/haynesbot/blob/master/examples/effecttype.png?raw=true" width="500" height="282" title="IV">
 
+!raidiv (!raidcp)
+
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/raidiv.png?raw=true" width="300" height="290" title="RaidIV">
+
+!iv
+
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/iv.png?raw=true" width="300" height="322" title="IV">
+
+!maxcp
+
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/maxcp.png?raw=true" width="300" height="236" title="IV">
+
 !type
 
 <img src="https://github.com/haynesherway/haynesbot/blob/master/examples/type.png?raw=true" width="300" height="225" title="IV">
 
-!raidchart rayquaza
+!raidchart
 
 ![Raidchart Rayquaza](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Rayquaza.png?raw=true)
+![Raidchart Mewtwo](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Mewtwo.png?raw=true)
+![Raidchart Groudon](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Groudon.png?raw=true)
+![Raidchart Celebi](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Celebi.png?raw=true)
+![Raidchart Kyogre](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Kyogre.png?raw=true)
