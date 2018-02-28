@@ -43,11 +43,13 @@ You will need to put your discord bot token in the config.json file
 
 <img src="https://github.com/haynesherway/haynesbot/blob/master/examples/wat.png?raw=true" width="500" height="572" title="Wat">
 
-![wat](https://github.com/haynesherway/haynesbot/blob/master/examples/wat.png?raw=true)
-
 !wat iv
 
-![wat iv](https://github.com/haynesherway/haynesbot/blob/master/examples/watdetail.png?raw=true)
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/watdetail.png?raw=true" width="500" height="537" title="IV">
+
+!raidiv (!raidcp)
+
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/raidiv.png?raw=true" width="500" height="484" title="RaidIV">
 
 !raidchart rayquaza
 
