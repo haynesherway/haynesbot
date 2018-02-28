@@ -77,6 +77,5 @@ You will need to put your discord bot token in the config.json file
 
 !raidchart
 
-<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Rayquaza.png?raw=true" title="Raidchart">
-<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Kyogre.png?raw=true" title="Raidchart">
+![Raidchart Rayquaza](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Rayquaza.png?raw=true) ![Raidchart Mewtwo](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Mewtwo.png?raw=true) ![Raidchart Latias](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Latias.png?raw=true) ![Raidchart Latios](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Latios.png?raw=true)
 
