@@ -2,7 +2,9 @@
 
 # Haynes Bot
 
-A discord bot that does pokemon go related things, like calculate IVs 
+A discord bot that does pokemon go related things, like calculate IVs and display moves and effects.
+
+Calculations and pokemon data come from [haynesherway/pogo](https://www.github.com/haynesherway/pogo)
 
 [![GoDoc](https://godoc.org/github.com/haynesherway/haynesbot?status.svg)](https://godoc.org/github.com/haynesherway/haynesbot)
 
