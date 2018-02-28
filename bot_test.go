@@ -2,8 +2,8 @@ package haynesbot
 
 import (
     "fmt"
-    "strings"
-    "testing"
+    //"strings"
+    //"testing"
     
     "github.com/bwmarrin/discordgo"
 )
@@ -30,7 +30,7 @@ func init() {
 	})
 }
 
-func TestBotResponse_PrintInfoToDiscord(t *testing.T) {
+/*func TestBotResponse_PrintInfoToDiscord(t *testing.T) {
     message := &discordgo.Message{
         Content: "!wat",
         ChannelID: TEST_CHANNEL_ID,
@@ -39,4 +39,4 @@ func TestBotResponse_PrintInfoToDiscord(t *testing.T) {
     bot := NewBotResponse(goBot, m, strings.Fields(m.Content))
     bot.PrintInfoToDiscord()
     return
-}
+}*/
