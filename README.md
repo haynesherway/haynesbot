@@ -41,6 +41,8 @@ You will need to put your discord bot token in the config.json file
 
 !wat
 
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/wat.png?raw=true" width="500" height="572" title="Wat">
+
 ![wat](https://github.com/haynesherway/haynesbot/blob/master/examples/wat.png?raw=true)
 
 !wat iv
