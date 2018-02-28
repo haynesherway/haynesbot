@@ -10,6 +10,7 @@ import (
 	"runtime"
 )
 
+// Config values
 var (
 	Token     string
 	TestToken string
@@ -32,6 +33,7 @@ type configStruct struct {
 	TestGuildFile string `json:"TestGuildSettings"`
 }
 
+// ReadConfig reads the config file and initializes values using those configs
 func ReadConfig() error {
 	log.Println("Reading from config file...")
 
@@ -59,7 +61,7 @@ func ReadConfig() error {
 		config.GuildFile = config.TestGuildFile
 	}
 	
-	ReadGuildSettings(config.GuildFile)
+	readGuildSettings(config.GuildFile)
 
 	TestToken = config.TestToken
 	Token = config.Token

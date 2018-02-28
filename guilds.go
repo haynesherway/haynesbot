@@ -30,10 +30,12 @@ var (
 	ManagedGuilds []string
 )
 
+// GuildSettings is a json struct to get the slice of Guild Settings
 type GuildSettings struct {
 	GuildSettings []GuildSetting `json:"GuildSettings"`
 }
 
+// GuildSetting is a holder for the settings of a single guild
 type GuildSetting struct {
 	Name string `json:"Name"`
 	ID string `json:"ID"`
@@ -44,12 +46,13 @@ type GuildSetting struct {
 	Goodbye string `json:"Goodbye,omitempty"`
 }
 
+// Guild is a representation of a single discord guild
 type Guild struct {
     *discordgo.Guild
     Settings GuildSetting
 }
 
-func InitGuilds(state *discordgo.State) error {
+func initGuilds(state *discordgo.State) error {
     
     for _, g := range state.Guilds {
         guild, ok := Guilds[g.ID]
@@ -69,6 +72,7 @@ func InitGuilds(state *discordgo.State) error {
     return nil
 }
 
+// NewGuild creates a new guild with the default settings
 func NewGuild(guild *discordgo.Guild) *Guild {
     botGuild := &Guild{guild, GuildSetting{
                 ID: guild.ID,
@@ -85,6 +89,7 @@ func NewGuild(guild *discordgo.Guild) *Guild {
             return botGuild
 }
 
+// Update update the settings of a guild and updates the json file
 func (guild *Guild) Update() error {
     if guild.Settings.Name == "" { 
         return guildSettings.add(guild).save(config.GuildFile)
@@ -92,36 +97,42 @@ func (guild *Guild) Update() error {
     return nil
 }
 
+// SetPrefix sets the bot prefix for a guild
 func (guild *Guild) SetPrefix(pre string) error {
     guild.Settings.BotPrefix = pre
     guildSettings.add(guild).save(config.GuildFile)
     return nil
 }
 
+// SetWelcome sets the welcome messages for a guild
 func(guild *Guild) SetWelcome(msg string) error {
     guild.Settings.Welcome = msg
     guildSettings.add(guild).save(config.GuildFile)
     return nil
 }
 
+// SetGoodbye sets the goodbye message for a guild
 func(guild *Guild) SetGoodbye(msg string) error {
     guild.Settings.Goodbye = msg
     guildSettings.add(guild).save(config.GuildFile)
     return nil
 }
 
+// Manage adds the guild into the guilds managed by the bot
 func(guild *Guild) Manage(manage bool) error {
     guild.Settings.Managed = manage
     guildSettings.add(guild).save(config.GuildFile)
     return nil
 }
 
+// ManageTeams allows the guild to have teams (valor, instinct, mystic) managed by the bot
 func(guild *Guild) ManageTeams(manage bool) error {
     guild.Settings.Teams = manage
     guildSettings.add(guild).save(config.GuildFile)
     return nil
 }
 
+// CheckRoles verfies the necessary team roles exist in the guild
 func (guild *Guild) CheckRoles() error {
     roleCheck := make(map[string]bool)
     for _, role := range teamRoles {
@@ -143,6 +154,7 @@ func (guild *Guild) CheckRoles() error {
     return nil
 }
 
+// GetChannelID gets the channel id for a channel name in a guild
 func (guild Guild) GetChannelID(c string) (string, error) {
     for _, channel := range guild.Channels {
         if channel.Name == c {
@@ -153,6 +165,7 @@ func (guild Guild) GetChannelID(c string) (string, error) {
     return "", &botError{ERR_MISSING_CHANNEL, c}
 }
 
+// GetRoleID gets the role id for a named role in a guild
 func (guild *Guild) GetRoleID(r string) (string, error) {
     for _, role := range guild.Guild.Roles {
         if role.Name == r {
@@ -163,6 +176,7 @@ func (guild *Guild) GetRoleID(r string) (string, error) {
     return "", &botError{ERR_MISSING_ROLE, r}
 }
 
+// AddRold adds a role to the given user for a guild
 func (guild *Guild) AddRole(session *discordgo.Session, userID string, roleName string) error {
     roleID, err := guild.GetRoleID(roleName)
     if err != nil {
@@ -177,6 +191,7 @@ func (guild *Guild) AddRole(session *discordgo.Session, userID string, roleName 
 	return nil
 }
 
+// RemoveRole removes a role from the given user for a guild
 func (guild *Guild) RemoveRole(session *discordgo.Session, userID string, roleName string) error {
     roleID, err := guild.GetRoleID(roleName)
     if err != nil {
@@ -191,6 +206,7 @@ func (guild *Guild) RemoveRole(session *discordgo.Session, userID string, roleNa
 	return nil
 }
 
+// RemoveAllTeams removes all team roles from the given user for a guild
 func (guild *Guild) RemoveAllTeams(session *discordgo.Session, userID string) error {
     for _, t := range teamRoles {
         err := guild.RemoveRole(session, userID, t)
@@ -202,6 +218,7 @@ func (guild *Guild) RemoveAllTeams(session *discordgo.Session, userID string) er
     return nil
 }
 
+// PrintWelcome prints the stored welcome message in a welcome channel for a guild
 func (guild *Guild) PrintWelcome(user *discordgo.User) error {
     if !guild.IsManaged() {
 		return ERR_NOT_MANAGED
@@ -232,6 +249,7 @@ func (guild *Guild) PrintWelcome(user *discordgo.User) error {
     return nil
 }
 
+// PrintGoodbye prints the stored goodbye message in a welcome channel for a guild
 func (guild *Guild) PrintGoodbye(user *discordgo.User) error {
     if !guild.IsManaged() {
 		return ERR_NOT_MANAGED
@@ -263,6 +281,7 @@ func (guild *Guild) PrintGoodbye(user *discordgo.User) error {
     return nil
 }
 
+// IsOwner returns true if the given user is the owner of the guild
 func (guild *Guild) IsOwner(user *discordgo.User) bool {
     if user.ID == guild.OwnerID {
         return true
@@ -270,14 +289,17 @@ func (guild *Guild) IsOwner(user *discordgo.User) bool {
     return false
 }
 
+// IsManaged returns true if the guild is managed by the bot
 func (guild *Guild) IsManaged() bool {
    return guild.Settings.Managed
 }
 
+// TeamsManaged returns true if the teams are managed in this guild by the bot
 func (guild *Guild) TeamsManaged() bool {
    return guild.Settings.Teams
 }
 
+// IsValidTeam returns true if a team is a valid Pokemon Go team
 func IsValidTeam(s string) bool {
     for _, t := range teamRoles {
         if t == s {
@@ -287,7 +309,7 @@ func IsValidTeam(s string) bool {
     return false
 }
 
-func ReadGuildSettings(f string) error {
+func readGuildSettings(f string) error {
     Guilds = make(map[string]*Guild)
     guildSettings = &GuildSettings{}
     
