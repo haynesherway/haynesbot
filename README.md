@@ -77,8 +77,8 @@ You will need to put your discord bot token in the config.json file
 
 !raidchart
 
-![Raidchart Rayquaza](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Rayquaza.png?raw=true)
-![Raidchart Mewtwo](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Mewtwo.png?raw=true)
-![Raidchart Groudon](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Groudon.png?raw=true)
-![Raidchart Celebi](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Celebi.png?raw=true)
-![Raidchart Kyogre](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Kyogre.png?raw=true)
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Rayquaza.png?raw=true" title="Raidchart">
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Mewtwo.png?raw=true" title="Raidchart">
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Kyogre.png?raw=true" title="Raidchart">
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Groudon.png?raw=true" title="Raidchart">
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Celebi.png?raw=true" title="Raidchart">
