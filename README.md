@@ -4,6 +4,8 @@
 
 A discord bot that does pokemon go related things, like calculate IVs 
 
+[![GoDoc](https://godoc.org/github.com/haynesherway/haynesbot?status.svg)](https://godoc.org/github.com/haynesherway/haynesbot)
+
 
 ## Commands
 
