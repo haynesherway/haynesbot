@@ -6,6 +6,8 @@ A discord bot that does pokemon go related things, like calculate IVs and displa
 
 Calculations and pokemon data come from [haynesherway/pogo](https://www.github.com/haynesherway/pogo)
 
+If you would like to add the bot to your server, let me know and I will send you a link to do so.
+
 [![GoDoc](https://godoc.org/github.com/haynesherway/haynesbot?status.svg)](https://godoc.org/github.com/haynesherway/haynesbot) [![Build Status](https://travis-ci.org/haynesherway/haynesbot.svg?branch=master)](https://travis-ci.org/haynesherway/haynesbot)
 
 
