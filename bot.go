@@ -37,7 +37,6 @@ var (
 	ERR_POKEMON_UNRECOGNIZED = errors.New("Pokemon not recognized.")
 	ERR_POKEMON_TYPE_UNRECOGNIZED = errors.New("Pokemon/type not recognized.")
 	ERR_COMMAND_UNRECOGNIZED = errors.New("Command not recognized")
-	ERR_COORDS_COMMAND = errors.New("Coords command needs to be formatted like this: !coords {lat,long}")
 
 	ERR_NO_CHANNEL = errors.New("Unable to get Channel ID")
 	ERR_NO_GUILD = errors.New("Unable to get Guild ID")
@@ -129,12 +128,6 @@ var botCommands = []BotCommand{
 		[]string{"!wat", "!wat full", "!wat raidcp"}, true,
 		[]string{"haynes-bot", "haynez-bot"},
 		PrintInfoToDiscord,
-	},
-	{"coords", "!coords {lat, long}",
-		"Get a link to google maps for coordinates",
-		[]string{"!coords 43.24124,-76.14241"}, false,
-		[]string{},
-		PrintCoordsToDiscord,
 	},
 	{"team", "!team {mystic|valor|instinct}",
 		"Get assigned to a team",
@@ -867,25 +860,6 @@ func PrintTypeChartToDiscord(b *botResponse) error {
 	} else {
 		return &botError{ERR_POKEMON_TYPE_UNRECOGNIZED, b.fields[1]}
 	}
-	return nil
-}
-
-// PrintCoordsToDiscord prints a Pokego++ link to the coords
-func PrintCoordsToDiscord(b *botResponse) error {
-	var pokego_url = "https://pokedex100.com/?z="
-	
-	if len(b.fields) < 2 {
-		return &botError{ERR_COORDS_COMMAND, ""}
-	}
-	
-	c := config.BotPrefix + "coords"
-	coords := strings.Replace(strings.Replace(strings.Join(b.fields, ""), c, "", 1), " ", "", -1)
-	fmt.Println(coords)
-	
-	link := pokego_url + coords
-	
-	b.PrintToDiscord(link)
-	
 	return nil
 }
 
