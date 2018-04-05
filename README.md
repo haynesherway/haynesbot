@@ -8,6 +8,8 @@ Calculations and pokemon data come from [haynesherway/pogo](https://www.github.c
 
 If you would like to add the bot to your server, let me know and I will send you a link to do so.
 
+Update 4/5/2018: The !raidiv command now also works with research reward encounters (level 15)
+
 [![GoDoc](https://godoc.org/github.com/haynesherway/haynesbot?status.svg)](https://godoc.org/github.com/haynesherway/haynesbot) [![Build Status](https://travis-ci.org/haynesherway/haynesbot.svg?branch=master)](https://travis-ci.org/haynesherway/haynesbot)
 
 
@@ -23,8 +25,11 @@ If you would like to add the bot to your server, let me know and I will send you
 		Get range of possible raid CPs for specified pokemon  
 		Example: !raidcp groudon  
 * **!raidiv** {pokemon} {cp}  
-		Get possible IV combinations for specified raid pokemon with specified IV  
+		Get possible IV combinations for specified raid (or research reward encounter) pokemon with specified IV  
 		Example: !raidcp kyogre 2292  
+* **!mewiv** {cp}  
+		Get possible IV combinations for mew 
+		Example: !mewiv 1306		
 * **!raidchart** {pokemon}  
 		Get a chart with possible stats for specified pokemon at raid level above 90%  
 		Example: !raidchart machamp  
