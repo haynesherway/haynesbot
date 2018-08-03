@@ -51,9 +51,6 @@ var (
 	
 )
 
-//var POKEGO_URL = "https://pokemon.pokego2.com/coords-"
-var POKEGO_URL = "https://pokedex100.com/?z="
-
 type botResponse struct {
 	s       *discordgo.Session
 	m       *discordgo.MessageCreate
@@ -162,6 +159,7 @@ var botCommands = []BotCommand{
 	},
 }
 
+// Formatting for info
 var INFO_FORMAT = "!cmd [required] [fields|options] {optional}"
 
 // PrintInfo prints the info for a discord command
@@ -221,9 +219,9 @@ func Start() {
 		}
 		
 		log.Println("Adding active guilds...")
-		err = InitGuilds(goBot.State)
+		err = initGuilds(goBot.State)
 		if err != nil {
-			log.Println(err.Error)
+			log.Println(err.Error())
 		}
 
 		err = goBot.UpdateStatus(0, "!wat")
@@ -878,6 +876,8 @@ func PrintTypeChartToDiscord(b *botResponse) error {
 
 // PrintCoordsToDiscord prints a Pokego++ link to the coords
 func PrintCoordsToDiscord(b *botResponse) error {
+	var pokego_url = "https://pokedex100.com/?z="
+	
 	if len(b.fields) < 2 {
 		return &botError{ERR_COORDS_COMMAND, ""}
 	}
@@ -886,7 +886,7 @@ func PrintCoordsToDiscord(b *botResponse) error {
 	coords := strings.Replace(strings.Replace(strings.Join(b.fields, ""), c, "", 1), " ", "", -1)
 	fmt.Println(coords)
 	
-	link := POKEGO_URL + coords
+	link := pokego_url + coords
 	
 	b.PrintToDiscord(link)
 	
@@ -929,6 +929,7 @@ type botError struct {
 }
 
 var silentErrors = []error{ERR_NO_CHANNEL, ERR_NOT_MANAGED, ERR_NO_GUILD}
+
 // Error formats the error message for printing
 func (e *botError) Error() string {
 	for _, se := range silentErrors {
