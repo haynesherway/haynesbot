@@ -22,7 +22,7 @@ var (
 // Error printouts
 var (
 	ERR_CP_COMMAND           = errors.New("CP command needs to be formatted like this: !maxcp {pokemon} {level} {attack iv} {defense iv} {stamina iv}")
-	ERR_IV_COMMAND           = errors.New("IV command needs to be formatted like this: !iv {pokemon} {cp} {level} or !iv {pokemon} {cp}")
+	ERR_IV_COMMAND           = errors.New("IV command needs to be formatted like this: !iv {pokemon} {cp} {hp} {level/stardust} or !iv {pokemon} {cp} {hp}")
 	ERR_RAIDCP_COMMAND       = errors.New("Raid CP command needs to be formatted like this: !raidcp {pokemon} or !raidcp {pokemon} {cp}")
 	ERR_RAIDCHART_COMMAND    = errors.New("Raid CP Chart command needs to be formatted like this: !raidcpchart {pokemon}")
 	ERR_MAXCP_COMMAND        = errors.New("Max CP command needs to be formatted like this: !maxcp {pokemon}")
@@ -75,9 +75,9 @@ type BotCommand struct {
 var cmdMap map[string]BotCommand
 var cmdList map[string]BotCommand
 var botCommands = []BotCommand{
-	{"iv", "!iv [pokemon] [cp] {level|stardust} {adh}",
+	{"iv", "!iv [pokemon] [cp] [hp] {level|stardust} {adh}",
 		"Get possible IVs of a pokemon", 
-		[]string{"!iv numel 506 33 d", "!iv pikachu 613 500 ad", "!iv raichu 1703"}, true,
+		[]string{"!iv machamp 2526 143 33 a", "!iv pikachu 613 56 5000 ad", "!iv raichu 1703 98"}, true,
 		[]string{},
 		PrintIVToDiscord,
 	},
@@ -558,12 +558,18 @@ func PrintIVToDiscord(b *botResponse) error {
 	if err != nil {
 		return &botError{ERR_IV_COMMAND, ""}
 	}
+	
+	hp, err := strconv.Atoi(b.fields[3])
+	if err != nil {
+		return &botError{ERR_IV_COMMAND, ""}
+	}
 
 	level := 0.0
 	stardust := 0
-	if len(b.fields) > 3 {
+	
+	if len(b.fields) > 4 {
 
-		val, err := strconv.ParseFloat(b.fields[3], 64)
+		val, err := strconv.ParseFloat(b.fields[4], 64)
 		if err != nil {
 			return &botError{ERR_IV_COMMAND, ""}
 		}
@@ -575,20 +581,20 @@ func PrintIVToDiscord(b *botResponse) error {
 	}
 
 	bestvals := ""
-	if len(b.fields) > 4 {
-		if strings.Contains(b.fields[4], "a") {
+	if len(b.fields) > 5 {
+		if strings.Contains(b.fields[5], "a") {
 			bestvals += "a"
 		}
-		if strings.Contains(b.fields[4], "d") {
+		if strings.Contains(b.fields[5], "d") {
 			bestvals += "d"
 		}
-		if strings.Contains(b.fields[4], "h") || strings.Contains(b.fields[4], "s") {
+		if strings.Contains(b.fields[5], "h") || strings.Contains(b.fields[5], "s") {
 			bestvals += "s"
 		}
 	}
 
 	if p, err := pogo.GetPokemon(pokemonName); err == nil {
-		stats, ivChart := p.GetIV(cp, level, stardust, bestvals)
+		stats, ivChart := p.GetIV(cp, hp, level, stardust, bestvals)
 		if len(ivChart) == 0 {
 			return &botError{ERR_NO_COMBINATIONS, p.Name}
 		} else {
