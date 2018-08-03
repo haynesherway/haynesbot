@@ -109,7 +109,7 @@ func GetTable(p *pogo.Pokemon, data interface{}, fileName string) *os.File {
     table.Options.SetBorder(1)
     
     if ivList, ok := data.([]pogo.IVStat); ok {
-        table.SetHeaders([]string{"IV%", "A", "D", "S", "CP@20", "CP@25"}).SetColor(WHITE)
+        table.SetHeaders([]string{"IV%", "A", "D", "S", "CP@15", "CP@20", "CP@25"}).SetColor(WHITE)
         for _, iv := range ivList {
             if iv.Percent < 88 {
                 continue
@@ -118,12 +118,13 @@ func GetTable(p *pogo.Pokemon, data interface{}, fileName string) *os.File {
             d := strconv.Itoa(iv.Defense)
             s := strconv.Itoa(iv.Stamina)
             p := strconv.Itoa(iv.Percent) + "%"
+	    cp15 := strconv.Itoa(iv.CP15)
             cp20 := strconv.Itoa(iv.CP20)
             cp25 := strconv.Itoa(iv.CP25)
-            table.AddRow([]string{p, a, d, s, cp20, cp25}).SetBackground(PercentColor(iv.Percent)).SetColor(BLACK)
+            table.AddRow([]string{p, a, d, s, cp15, cp20, cp25}).SetBackground(PercentColor(iv.Percent)).SetColor(BLACK)
         }
     }
-    table.Options.SetColWidths([]int{35, 20, 20, 20, 50, 50})
+    table.Options.SetColWidths([]int{35, 20, 20, 20, 50, 50, 50})
     table.Draw()
     f, err = os.Create(ImageServer + "/" + fileName)
     if err != nil {
@@ -139,7 +140,7 @@ func GetTable(p *pogo.Pokemon, data interface{}, fileName string) *os.File {
 
 func Download(s string, n string) (f *os.File, err error) {
     n += ".png"
-    
+   
     if !ImageExists(n) {
     
         response, err := http.Get(s)

@@ -21,7 +21,7 @@ var (
     ERR_MISSING_CHANNEL = errors.New("Channel missing")
     )
 
-var teamRoles = []string{"mystic", "valor", "instinct", "kith"}
+var teamRoles = []string{"mystic", "valor", "instinct", "kith", "clash"}
 
 // Settings management
 var (

@@ -21,7 +21,7 @@ var (
 
 // Error printouts
 var (
-	ERR_CP_COMMAND           = errors.New("CP command needs to be formatted like this: !maxcp {pokemon} {level} {attack iv} {defense iv} {stamina iv}")
+	ERR_CP_COMMAND           = errors.New("CP command needs to be formatted like this: !cp {pokemon} {level} {attack iv} {defense iv} {stamina iv}")
 	ERR_IV_COMMAND           = errors.New("IV command needs to be formatted like this: !iv {pokemon} {cp} {level} or !iv {pokemon} {cp}")
 	ERR_RAIDCP_COMMAND       = errors.New("Raid CP command needs to be formatted like this: !raidcp {pokemon} or !raidcp {pokemon} {cp}")
 	ERR_RAIDCHART_COMMAND    = errors.New("Raid CP Chart command needs to be formatted like this: !raidcpchart {pokemon}")
@@ -100,7 +100,7 @@ var botCommands = []BotCommand{
 	{"raidiv", "!raidiv [pokemon] {cp}",
 		"Get possible IV combinations for specified raid pokemon with specified IV",
 		[]string{"!raidcp kyogre 2292", "!raidcp groudon"}, true,
-		[]string{"raidcp", "eggcp", "eggiv"},
+		[]string{"raidcp", "eggcp", "eggiv", "mewcp", "mewiv"},
 		PrintRaidCPToDiscord,
 	},
 	{"raidchart", "!raidchart [pokemon] {'full'}",
@@ -145,9 +145,9 @@ var botCommands = []BotCommand{
 		[]string{},
 		AssignTeam,
 	},
-	{"add", "!add", "Add this guild to management",
+	/*{"add", "!add", "Add this guild to management",
 		[]string{}, false, []string{}, AddGuild,
-	},
+	},*/
 	{"setprefix", "!setprefix {prefix string}", "Change bot prefix for server", 
 		[]string{}, false, []string{},
 		SetBotPrefix,
@@ -226,7 +226,7 @@ func Start() {
 			log.Println(err.Error)
 		}
 
-		err = goBot.UpdateStatus(0, "!haynes-bot")
+		err = goBot.UpdateStatus(0, "!wat")
 		if err != nil {
 			fmt.Println("Unable to update status: ", err.Error())
 		}
@@ -301,6 +301,10 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	
 	log.Println(m.Content)
 
+	if strings.Contains(m.Content, "mewcp") || strings.Contains(m.Content, "mewiv") {
+		m.Content = strings.Replace(m.Content, "mewcp", "mewcp mew", 1)
+		m.Content = strings.Replace(m.Content, "mewiv", "mewiv mew", 1)
+	}
 	bot := NewBotResponse(s, m, strings.Fields(m.Content))
 	cmd := bot.GetCommand(prefix)
 	if bot.err != nil {
