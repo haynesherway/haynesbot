@@ -8,6 +8,9 @@ Calculations and pokemon data come from [haynesherway/pogo](https://www.github.c
 
 To add the bot to your server:  https://discordapp.com/oauth2/authorize?client_id=402854185072328714&scope=bot
 
+I made a patreon because people said they wanted to donate to the project, but it isn't necessary.
+https://www.patreon.com/haynesbot
+
 Update 4/5/2018: The !raidiv command now also works with research reward encounters (level 15)
 
 [![GoDoc](https://godoc.org/github.com/haynesherway/haynesbot?status.svg)](https://godoc.org/github.com/haynesherway/haynesbot) [![Build Status](https://travis-ci.org/haynesherway/haynesbot.svg?branch=master)](https://travis-ci.org/haynesherway/haynesbot)
