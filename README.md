@@ -7,11 +7,16 @@ A discord bot that does pokemon go related things, like calculate IVs and displa
 Calculations and pokemon data come from [haynesherway/pogo](https://www.github.com/haynesherway/pogo)
 
 To add the bot to your server:  https://discordapp.com/oauth2/authorize?client_id=402854185072328714&scope=bot
+**NOTE: Currently, if you add the bot to your server, it needs a restart to be able to send messages, so please send me a message here or in the discord below so I can restart it for you. If this becomes a more common issue, I will spend the time fixing it, but currently it is only added to around 1 server a week.**
+
+HaynesBot help discord: https://discord.gg/CakVND
 
 I made a patreon because people said they wanted to donate to the project, but it isn't necessary.
 https://www.patreon.com/haynesbot
 
 Update 4/5/2018: The !raidiv command now also works with research reward encounters (level 15)
+
+Update 10/29/2018: !luckydate command added
 
 [![GoDoc](https://godoc.org/github.com/haynesherway/haynesbot?status.svg)](https://godoc.org/github.com/haynesherway/haynesbot) [![Build Status](https://travis-ci.org/haynesherway/haynesbot.svg?branch=master)](https://travis-ci.org/haynesherway/haynesbot)
 
@@ -45,6 +50,9 @@ Update 4/5/2018: The !raidiv command now also works with research reward encount
 * **!effect** {pokemon|type}  
 		Get a list of type relations a specified pokemon or type has  
 		Example: !effect pikachu or !effect electric  
+* **!luckydate**
+		Returns the date for pokemon to have been caught by for a higher change at luckies.
+		Example: !luckydate
 		
 ## Server Owner Commands:
 
