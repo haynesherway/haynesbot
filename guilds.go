@@ -21,7 +21,7 @@ var (
     ERR_MISSING_CHANNEL = errors.New("Channel missing")
     )
 
-var teamRoles = []string{"mystic", "valor", "instinct", "kith", "clash"}
+    var teamRoles = []string{"mystic", "valor", "instinct"}
 
 // Settings management
 var (
@@ -136,12 +136,12 @@ func(guild *Guild) ManageTeams(manage bool) error {
 func (guild *Guild) CheckRoles() error {
     roleCheck := make(map[string]bool)
     for _, role := range teamRoles {
-        roleCheck[role] = false
+        roleCheck[strings.ToLower(role)] = false
     }
     
     for _, role := range guild.Guild.Roles {
-        if _, ok := roleCheck[role.Name]; ok {
-            roleCheck[role.Name] = true
+        if _, ok := roleCheck[strings.ToLower(role.Name)]; ok {
+            roleCheck[strings.ToLower(role.Name)] = true
         }
     }
     
@@ -168,7 +168,7 @@ func (guild Guild) GetChannelID(c string) (string, error) {
 // GetRoleID gets the role id for a named role in a guild
 func (guild *Guild) GetRoleID(r string) (string, error) {
     for _, role := range guild.Guild.Roles {
-        if role.Name == r {
+        if strings.ToLower(role.Name) == strings.ToLower(r) {
             return role.ID, nil
         }
     }
@@ -302,7 +302,7 @@ func (guild *Guild) TeamsManaged() bool {
 // IsValidTeam returns true if a team is a valid Pokemon Go team
 func IsValidTeam(s string) bool {
     for _, t := range teamRoles {
-        if t == s {
+        if strings.ToLower(t) == strings.ToLower(s) {
             return true
         }
     }

@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+    "time"
 )
 
 // BotID for discord
@@ -22,7 +23,7 @@ var (
 // Error printouts
 var (
 	ERR_CP_COMMAND           = errors.New("CP command needs to be formatted like this: !cp {pokemon} {level} {attack iv} {defense iv} {stamina iv}")
-	ERR_IV_COMMAND           = errors.New("IV command needs to be formatted like this: !iv {pokemon} {cp} {level} or !iv {pokemon} {cp}")
+	ERR_IV_COMMAND           = errors.New("IV command needs to be formatted like this: !iv {pokemon} {cp} {hp} {level} or !iv {pokemon} {cp} {hp}")
 	ERR_RAIDCP_COMMAND       = errors.New("Raid CP command needs to be formatted like this: !raidcp {pokemon} or !raidcp {pokemon} {cp}")
 	ERR_RAIDCHART_COMMAND    = errors.New("Raid CP Chart command needs to be formatted like this: !raidcpchart {pokemon}")
 	ERR_MAXCP_COMMAND        = errors.New("Max CP command needs to be formatted like this: !maxcp {pokemon}")
@@ -76,9 +77,9 @@ type BotCommand struct {
 var cmdMap map[string]BotCommand
 var cmdList map[string]BotCommand
 var botCommands = []BotCommand{
-	{"iv", "!iv [pokemon] [cp] {level|stardust} {adh}",
+	{"iv", "!iv [pokemon] [cp] [hp] {level|stardust} {adh}",
 		"Get possible IVs of a pokemon", 
-		[]string{"!iv numel 506 33 d", "!iv pikachu 613 500 ad", "!iv raichu 1703"}, true,
+		[]string{"!iv machamp 2526 143 33 a", "!iv pikachu 613 56 5000 ad", "!iv raichu 1703 98"}, true,
 		[]string{},
 		PrintIVToDiscord,
 	},
@@ -124,6 +125,12 @@ var botCommands = []BotCommand{
 		[]string{},
 		PrintTypeChartToDiscord,
 	},
+    {"luckydate", "!luckydate", 
+        "Returns the date for pokemon to have been caught by for a higher change at luckies.",
+        []string{"!luckydate"}, true,
+        []string{},
+        PrintLuckyDateToDiscord,
+    },
 	{"wat", "!wat {command|'full'}",
 		"Get info about commands",
 		[]string{"!wat", "!wat full", "!wat raidcp"}, true,
@@ -402,7 +409,7 @@ func AssignTeam(b *botResponse) error {
 		return &botError{ERR_INVALID_ROLE, b.fields[1]}
 	}
 	
-	// Attempt to get the channe from the state
+	// Attempt to get the channel from the state
 	// If error, fall back to restapi
 	channel, err := b.s.State.Channel(b.m.ChannelID)
 	if err != nil {
@@ -430,18 +437,18 @@ func AssignTeam(b *botResponse) error {
 	if !guild.TeamsManaged() {
 		return &botError{ERR_NOT_MANAGED, ""}
 	}
-	
+
 	// Remove all team roles
 	err = guild.RemoveAllTeams(b.s, b.m.Author.ID)
 	if err != nil {
-		return ERR_ROLE_REMOVE
+		return &botError{ERR_ROLE_REMOVE, ""}
 	}
-	
+
 	err = guild.AddRole(b.s, b.m.Author.ID, team)
 	if err != nil {
-		return err
+		return &botError{err, ""}
 	}
-	
+
 	b.PrintToDiscord(fmt.Sprintf("You have been added to team %s!", team))
 	
 	return nil
@@ -570,11 +577,16 @@ func PrintIVToDiscord(b *botResponse) error {
 		return &botError{ERR_IV_COMMAND, ""}
 	}
 
+    hp, err := strconv.Atoi(b.fields[3])
+    if err != nil {
+        return &botError{ERR_IV_COMMAND, ""}
+    }
+
 	level := 0.0
 	stardust := 0
-	if len(b.fields) > 3 {
+	if len(b.fields) > 4 {
 
-		val, err := strconv.ParseFloat(b.fields[3], 64)
+		val, err := strconv.ParseFloat(b.fields[4], 64)
 		if err != nil {
 			return &botError{ERR_IV_COMMAND, ""}
 		}
@@ -586,20 +598,20 @@ func PrintIVToDiscord(b *botResponse) error {
 	}
 
 	bestvals := ""
-	if len(b.fields) > 4 {
-		if strings.Contains(b.fields[4], "a") {
+	if len(b.fields) > 5 {
+		if strings.Contains(b.fields[5], "a") {
 			bestvals += "a"
 		}
-		if strings.Contains(b.fields[4], "d") {
+		if strings.Contains(b.fields[5], "d") {
 			bestvals += "d"
 		}
-		if strings.Contains(b.fields[4], "h") || strings.Contains(b.fields[4], "s") {
+		if strings.Contains(b.fields[5], "h") || strings.Contains(b.fields[5], "s") {
 			bestvals += "s"
 		}
 	}
 
 	if p, err := pogo.GetPokemon(pokemonName); err == nil {
-		stats, ivChart := p.GetIV(cp, level, stardust, bestvals)
+		stats, ivChart := p.GetIV(cp, hp, level, stardust, bestvals)
 		if len(ivChart) == 0 {
 			return &botError{ERR_NO_COMBINATIONS, p.Name}
 		} else {
@@ -838,6 +850,16 @@ func PrintTypeToDiscord(b *botResponse) error {
 	}
 
 	return nil
+}
+
+// PrintLuckyDateToDiscord prints the lucky date to discord
+func PrintLuckyDateToDiscord(b *botResponse) error {
+    now := time.Now()
+    luckydate := now.AddDate(0, 0, -780)
+    msg := fmt.Sprintf("Any Pokémon older than **%s** has the highest chance to become lucky.", luckydate.Format("01/02/2006"))
+    _, _ = b.s.ChannelMessageSend(b.m.ChannelID, msg)
+
+    return nil
 }
 
 // PrintTypeToDiscord prints an embed with a type chart to discord
