@@ -12,24 +12,24 @@ import (
 
 // Config values
 var (
-	Token     string
-	TestToken string
-	BotPrefix string
-	UseImages bool
+	Token       string
+	TestToken   string
+	BotPrefix   string
+	UseImages   bool
 	ImageServer string
-	test      bool
+	test        bool
 
 	config *configStruct
 )
 
 type configStruct struct {
-	Token     string `json:"Token"`
-	BotPrefix string `json:"BotPrefix"`
-	TestToken string `json:"TestToken"`
-	TestPrefix string `json:"TestPrefix"`
-	Images bool `json:"Images"`
-	ImageServer string `json:"ImageServer"`
-	GuildFile string `json:"GuildSettings"`
+	Token         string `json:"Token"`
+	BotPrefix     string `json:"BotPrefix"`
+	TestToken     string `json:"TestToken"`
+	TestPrefix    string `json:"TestPrefix"`
+	Images        bool   `json:"Images"`
+	ImageServer   string `json:"ImageServer"`
+	GuildFile     string `json:"GuildSettings"`
 	TestGuildFile string `json:"TestGuildSettings"`
 }
 
@@ -60,7 +60,8 @@ func ReadConfig() error {
 		config.BotPrefix = config.TestPrefix
 		config.GuildFile = config.TestGuildFile
 	}
-	
+
+	log.Println("Guild file: ", config.GuildFile)
 	readGuildSettings(config.GuildFile)
 
 	TestToken = config.TestToken

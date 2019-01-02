@@ -3,15 +3,16 @@ package haynesbot
 import (
 	"errors"
 	"fmt"
-	"github.com/bwmarrin/discordgo"
-	"github.com/haynesherway/pogo"
 	"io"
 	"log"
-	"os"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
-    "time"
+	"time"
+
+	"github.com/bwmarrin/discordgo"
+	"github.com/haynesherway/pogo"
 )
 
 // BotID for discord
@@ -22,33 +23,35 @@ var (
 
 // Error printouts
 var (
-	ERR_CP_COMMAND           = errors.New("CP command needs to be formatted like this: !cp {pokemon} {level} {attack iv} {defense iv} {stamina iv}")
-	ERR_IV_COMMAND           = errors.New("IV command needs to be formatted like this: !iv {pokemon} {cp} {hp} {level} or !iv {pokemon} {cp} {hp}")
-	ERR_RAIDCP_COMMAND       = errors.New("Raid CP command needs to be formatted like this: !raidcp {pokemon} or !raidcp {pokemon} {cp}")
-	ERR_RAIDCHART_COMMAND    = errors.New("Raid CP Chart command needs to be formatted like this: !raidcpchart {pokemon}")
-	ERR_MAXCP_COMMAND        = errors.New("Max CP command needs to be formatted like this: !maxcp {pokemon}")
-	ERR_MOVES_COMMAND        = errors.New("Moves command needs to be formatted like this: !moves {pokemon}")
-	ERR_TYPES_COMMAND        = errors.New("Types command needs to be formatted like this: !type {pokemon}")
-	ERR_TYPECHART_COMMAND    = errors.New("Effect command needs to be formatted like this: !effect {pokemon}")
-	ERR_PREFIX_COMMAND		 = errors.New("Set the prefix for your guild using !setprefix {prefix}. Max 2 characters.")
-	ERR_WELCOME_COMMAND		= errors.New("Set the welcome message for your server using !setwelcome {message}")
-	ERR_GOODBYE_COMMAND		= errors.New("Set the goodbye message for your server using !setgoodbye {message}")
-	ERR_NO_COMBINATIONS      = errors.New("No possible IV combinations for that CP")
-	ERR_NO_STATS             = errors.New("Pokemon Master file doesn't have stats for that pokemon yet :(")
-	ERR_POKEMON_UNRECOGNIZED = errors.New("Pokemon not recognized.")
+	ERR_CP_COMMAND                = errors.New("CP command needs to be formatted like this: !cp {pokemon} {level} {attack iv} {defense iv} {stamina iv}")
+	ERR_IV_COMMAND                = errors.New("IV command needs to be formatted like this: !iv {pokemon} {cp} {hp} {level} or !iv {pokemon} {cp} {hp}")
+	ERR_RAIDCP_COMMAND            = errors.New("Raid CP command needs to be formatted like this: !raidcp {pokemon} or !raidcp {pokemon} {cp}")
+	ERR_RAIDCHART_COMMAND         = errors.New("Raid CP Chart command needs to be formatted like this: !raidcpchart {pokemon}")
+	ERR_MAXCP_COMMAND             = errors.New("Max CP command needs to be formatted like this: !maxcp {pokemon}")
+	ERR_MOVES_COMMAND             = errors.New("Moves command needs to be formatted like this: !moves {pokemon}")
+	ERR_TYPES_COMMAND             = errors.New("Types command needs to be formatted like this: !type {pokemon}")
+	ERR_TYPECHART_COMMAND         = errors.New("Effect command needs to be formatted like this: !effect {pokemon}")
+	ERR_NORMAL_COMMAND            = errors.New("Normal command needs to be formatted liket his: !normal {pokemon}")
+	ERR_SHINY_COMMAND             = errors.New("Shiny command needs to be formatted like this: !shiny {pokemon}")
+	ERR_PREFIX_COMMAND            = errors.New("Set the prefix for your guild using !setprefix {prefix}. Max 2 characters.")
+	ERR_WELCOME_COMMAND           = errors.New("Set the welcome message for your server using !setwelcome {message}")
+	ERR_GOODBYE_COMMAND           = errors.New("Set the goodbye message for your server using !setgoodbye {message}")
+	ERR_NO_COMBINATIONS           = errors.New("No possible IV combinations for that CP")
+	ERR_NO_STATS                  = errors.New("Pokemon Master file doesn't have stats for that pokemon yet :(")
+	ERR_NO_IMAGE                  = errors.New("No image found")
+	ERR_POKEMON_UNRECOGNIZED      = errors.New("Pokemon not recognized.")
 	ERR_POKEMON_TYPE_UNRECOGNIZED = errors.New("Pokemon/type not recognized.")
-	ERR_COMMAND_UNRECOGNIZED = errors.New("Command not recognized")
+	ERR_COMMAND_UNRECOGNIZED      = errors.New("Command not recognized")
 
 	ERR_NO_CHANNEL = errors.New("Unable to get Channel ID")
-	ERR_NO_GUILD = errors.New("Unable to get Guild ID")
-	ERR_NO_TEAM = errors.New("No team provided.")
-	ERR_NOT_OWNER = errors.New("Only the server owner can use that command :)")
-	
+	ERR_NO_GUILD   = errors.New("Unable to get Guild ID")
+	ERR_NO_TEAM    = errors.New("No team provided.")
+	ERR_NOT_OWNER  = errors.New("Only the server owner can use that command :)")
+
 	ERR_MISSING_ROLE = errors.New("Missing role.")
 	ERR_INVALID_ROLE = errors.New("Invalid role.")
-	ERR_ROLE_ADD = errors.New("Unable to add role :(")
-	ERR_ROLE_REMOVE = errors.New("Unable to remove role :(")
-	
+	ERR_ROLE_ADD     = errors.New("Unable to add role :(")
+	ERR_ROLE_REMOVE  = errors.New("Unable to remove role :(")
 )
 
 type botResponse struct {
@@ -60,15 +63,15 @@ type botResponse struct {
 }
 
 // Type Do is a placeholder for the function a command should execute
-type Do func(b *botResponse) error 
+type Do func(b *botResponse) error
 
 // BotCommand is a representation of a command the bot can handle
 type BotCommand struct {
-	Name string
-	Format string
-	Info string
+	Name    string
+	Format  string
+	Info    string
 	Example []string
-	Print bool
+	Print   bool
 	Aliases []string
 	Do
 }
@@ -77,7 +80,7 @@ var cmdMap map[string]BotCommand
 var cmdList map[string]BotCommand
 var botCommands = []BotCommand{
 	{"iv", "!iv [pokemon] [cp] [hp] {level|stardust} {adh}",
-		"Get possible IVs of a pokemon", 
+		"Get possible IVs of a pokemon",
 		[]string{"!iv machamp 2526 143 33 a", "!iv pikachu 613 56 5000 ad", "!iv raichu 1703 98"}, true,
 		[]string{},
 		PrintIVToDiscord,
@@ -89,7 +92,7 @@ var botCommands = []BotCommand{
 		PrintCPToDiscord,
 	},
 	{"maxcp", "!maxcp [pokemon]",
-		"Get maximum CP of a pokemon with perfect IVs at level 40", 
+		"Get maximum CP of a pokemon with perfect IVs at level 40",
 		[]string{"!maxcp latios"}, true,
 		[]string{},
 		PrintMaxCPToDiscord,
@@ -124,12 +127,24 @@ var botCommands = []BotCommand{
 		[]string{},
 		PrintTypeChartToDiscord,
 	},
-    {"luckydate", "!luckydate", 
-        "Returns the date for pokemon to have been caught by for a higher change at luckies.",
-        []string{"!luckydate"}, true,
-        []string{},
-        PrintLuckyDateToDiscord,
-    },
+	{"luckydate", "!luckydate",
+		"Returns the date for pokemon to have been caught by for a higher change at luckies.",
+		[]string{"!luckydate"}, true,
+		[]string{},
+		PrintLuckyDateToDiscord,
+	},
+	{"shiny", "!shiny",
+		"Returns an image of the shiny version of a pokemon.",
+		[]string{"!shiny 3", "!shiny charmander"}, true,
+		[]string{},
+		PrintShinyToDiscord,
+	},
+	{"normal", "!normal",
+		"Returns an image of the normal version of a pokemon.",
+		[]string{"!normal 3", "!normal charmander"}, true,
+		[]string{},
+		PrintNormalToDiscord,
+	},
 	{"wat", "!wat {command|'full'}",
 		"Get info about commands",
 		[]string{"!wat", "!wat full", "!wat raidcp"}, true,
@@ -145,7 +160,7 @@ var botCommands = []BotCommand{
 	/*{"add", "!add", "Add this guild to management",
 		[]string{}, false, []string{}, AddGuild,
 	},*/
-	{"setprefix", "!setprefix {prefix string}", "Change bot prefix for server", 
+	{"setprefix", "!setprefix {prefix string}", "Change bot prefix for server",
 		[]string{}, false, []string{},
 		SetBotPrefix,
 	},
@@ -156,6 +171,10 @@ var botCommands = []BotCommand{
 	{"setgoodbye", "!setgoodbye {message}", "Set goodbye message for server",
 		[]string{}, false, []string{},
 		SetGoodbye,
+	},
+	{"setiv", "!setiv", "Set IV Channel for Images",
+		[]string{}, false, []string{},
+		SetIVChannel,
 	},
 }
 
@@ -182,7 +201,7 @@ func (b *botResponse) GetCommand(prefix string) (cmd *BotCommand) {
 		b.err = ERR_COMMAND_UNRECOGNIZED
 		return cmd
 	}
-	
+
 	name := strings.ToLower(strings.Replace(b.fields[0], prefix, "", 1))
 	if c, ok := cmdMap[name]; ok {
 		return &c
@@ -201,76 +220,75 @@ func Start() {
 		return
 	}
 
-		u, err := goBot.User("@me")
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
+	u, err := goBot.User("@me")
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
 
-		BotID = u.ID
+	BotID = u.ID
 
-		goBot.AddHandler(messageHandler)
-		goBot.AddHandler(welcomeHandler)
-		goBot.AddHandler(goodbyeHandler)
-		err = goBot.Open()
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
-		
-		log.Println("Adding active guilds...")
-		err = initGuilds(goBot.State)
-		if err != nil {
-			log.Println(err.Error())
-		}
+	goBot.AddHandler(messageHandler)
+	goBot.AddHandler(welcomeHandler)
+	goBot.AddHandler(goodbyeHandler)
+	err = goBot.Open()
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
 
-		err = goBot.UpdateStatus(0, "!wat")
-		if err != nil {
-			fmt.Println("Unable to update status: ", err.Error())
-		}
-		
-		if UseImages {
-			//Start Image Server
-			http.Handle("/img", http.FileServer(http.Dir(ImageServer)))
-		}
+	log.Println("Adding active guilds...")
+	err = initGuilds(goBot.State)
+	if err != nil {
+		log.Println(err.Error())
+	}
 
-		log.Println("Bot is running!")
+	err = goBot.UpdateStatus(0, "!wat")
+	if err != nil {
+		fmt.Println("Unable to update status: ", err.Error())
+	}
+
+	if UseImages {
+		//Start Image Server
+		http.Handle("/img", http.FileServer(http.Dir(ImageServer)))
+	}
+
+	log.Println("Bot is running!")
 }
 
 func welcomeHandler(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
-	guild, ok := Guilds[m.GuildID];
+	guild, ok := Guilds[m.GuildID]
 	if !ok {
 		return
 	}
-	
+
 	if !guild.IsManaged() {
 		return
 	}
-	
-	
+
 	err := guild.PrintWelcome(m.User)
 	if err != nil {
 		log.Println(err)
 	}
-	
+
 	return
 }
 
 func goodbyeHandler(s *discordgo.Session, m *discordgo.GuildMemberRemove) {
-	guild, ok := Guilds[m.GuildID];
+	guild, ok := Guilds[m.GuildID]
 	if !ok {
 		return
 	}
-	
+
 	if !guild.IsManaged() {
 		return
 	}
-	
+
 	err := guild.PrintGoodbye(m.User)
 	if err != nil {
 		log.Println(err)
 	}
-	
+
 	return
 }
 
@@ -279,16 +297,22 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if err != nil {
 		return
 	}
-	
+
 	guild, ok := Guilds[channel.GuildID]
 	if !ok {
 		return
 	}
-	
+
 	guild.Update()
-	
+
 	prefix := guild.Settings.BotPrefix
-	
+	imageChannel := guild.Settings.ImageChannel
+
+	if m.ChannelID == imageChannel && len(m.Attachments) != 0 {
+		ReadImage(m.Attachments[0])
+		return
+	}
+
 	if !strings.HasPrefix(m.Content, prefix) {
 		return
 	}
@@ -296,23 +320,17 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID == BotID {
 		return
 	}
-	
-	log.Println(m.Content)
 
-	if strings.Contains(m.Content, "mewcp") || strings.Contains(m.Content, "mewiv") {
-		m.Content = strings.Replace(m.Content, "mewcp", "mewcp mew", 1)
-		m.Content = strings.Replace(m.Content, "mewiv", "mewiv mew", 1)
-	}
 	bot := NewBotResponse(s, m, strings.Fields(m.Content))
 	cmd := bot.GetCommand(prefix)
 	if bot.err != nil {
 		return
 	}
-	
+
 	err = cmd.Do(bot)
 	if err != nil {
-			bot.PrintErrorToDiscord(err)
-		}
+		bot.PrintErrorToDiscord(err)
+	}
 
 	return
 
@@ -324,19 +342,19 @@ func AddGuild(b *botResponse) error {
 	if err != nil {
 		return &botError{ERR_NO_CHANNEL, ""}
 	}
-	
-	guild, ok := Guilds[channel.GuildID];
+
+	guild, ok := Guilds[channel.GuildID]
 	if !ok {
 		g, err := b.s.Guild(channel.GuildID)
 		if err != nil {
 			return &botError{ERR_NO_GUILD, ""}
 		}
-		
+
 		guild = NewGuild(g)
 	}
-	
+
 	guild.Manage(true)
-	
+
 	if len(b.fields) > 1 {
 		if b.fields[1] == "teams" {
 			// Check Roles
@@ -347,11 +365,39 @@ func AddGuild(b *botResponse) error {
 			guild.ManageTeams(true)
 		}
 	}
-	
+
 	guild.Manage(true)
-	
+
 	b.PrintToDiscord("Guild management added!")
-	
+
+	return nil
+}
+
+// SetIVChannel sets current channel as IV Image Channel
+func SetIVChannel(b *botResponse) error {
+	channel, err := b.s.Channel(b.m.ChannelID)
+	if err != nil {
+		return &botError{ERR_NO_CHANNEL, ""}
+	}
+
+	guild, ok := Guilds[channel.GuildID]
+	if !ok {
+		g, err := b.s.Guild(channel.GuildID)
+		if err != nil {
+			return &botError{ERR_NO_GUILD, ""}
+		}
+
+		guild = NewGuild(g)
+	}
+
+	if !guild.IsOwner(b.m.Author) {
+		return &botError{ERR_NOT_OWNER, ""}
+	}
+
+	guild.SetImageChannel(channel.ID)
+
+	b.PrintToDiscord("Haynesbot IV Channel successfully changed.")
+
 	return nil
 }
 
@@ -361,28 +407,28 @@ func SetBotPrefix(b *botResponse) error {
 	if err != nil {
 		return &botError{ERR_NO_CHANNEL, ""}
 	}
-	
-	guild, ok := Guilds[channel.GuildID];
+
+	guild, ok := Guilds[channel.GuildID]
 	if !ok {
 		g, err := b.s.Guild(channel.GuildID)
 		if err != nil {
 			return &botError{ERR_NO_GUILD, ""}
 		}
-		
+
 		guild = NewGuild(g)
 	}
-	
+
 	if !guild.IsOwner(b.m.Author) {
 		return &botError{ERR_NOT_OWNER, ""}
 	}
-	
+
 	if len(b.fields) > 1 {
 		prefix := b.fields[1]
 		if len(prefix) > 2 {
 			return &botError{ERR_PREFIX_COMMAND, ""}
 		}
 		guild.SetPrefix(prefix)
-		
+
 		b.PrintToDiscord("Haynesbot prefix successfully changed to " + prefix)
 	} else {
 		return &botError{ERR_PREFIX_COMMAND, ""}
@@ -395,13 +441,13 @@ func AssignTeam(b *botResponse) error {
 	if len(b.fields) < 2 {
 		return &botError{ERR_NO_TEAM, ""}
 	}
-	
+
 	team := strings.ToLower(b.fields[1])
 	// Make sure this is a valid team
 	if !IsValidTeam(team) {
 		return &botError{ERR_INVALID_ROLE, b.fields[1]}
 	}
-	
+
 	// Attempt to get the channel from the state
 	// If error, fall back to restapi
 	channel, err := b.s.State.Channel(b.m.ChannelID)
@@ -411,22 +457,22 @@ func AssignTeam(b *botResponse) error {
 			return &botError{ERR_NO_CHANNEL, ""}
 		}
 	}
-	
+
 	// Attempt to get the guild from the state
-	guild, ok := Guilds[channel.GuildID];
+	guild, ok := Guilds[channel.GuildID]
 	if !ok {
 		g, err := b.s.Guild(channel.GuildID)
 		if err != nil {
 			return &botError{ERR_NO_GUILD, ""}
 		}
-		
+
 		guild = NewGuild(g)
 	}
-	
+
 	if !guild.IsManaged() {
 		return &botError{ERR_NOT_MANAGED, ""}
 	}
-	
+
 	if !guild.TeamsManaged() {
 		return &botError{ERR_NOT_MANAGED, ""}
 	}
@@ -443,7 +489,7 @@ func AssignTeam(b *botResponse) error {
 	}
 
 	b.PrintToDiscord(fmt.Sprintf("You have been added to team %s!", team))
-	
+
 	return nil
 }
 
@@ -453,29 +499,29 @@ func SetWelcome(b *botResponse) error {
 	if err != nil {
 		return &botError{ERR_NO_CHANNEL, ""}
 	}
-	
-	guild, ok := Guilds[channel.GuildID];
+
+	guild, ok := Guilds[channel.GuildID]
 	if !ok {
 		g, err := b.s.Guild(channel.GuildID)
 		if err != nil {
 			return &botError{ERR_NO_GUILD, ""}
 		}
-		
+
 		guild = NewGuild(g)
 	}
-	
+
 	if !guild.IsManaged() {
 		return &botError{ERR_NOT_MANAGED, ""}
 	}
-	
+
 	if !guild.IsOwner(b.m.Author) {
 		return &botError{ERR_NOT_OWNER, ""}
 	}
-	
+
 	if len(b.fields) > 1 {
 		welcome := strings.Join(b.fields[1:], " ")
 		guild.SetWelcome(welcome)
-		
+
 		b.PrintToDiscord("Welcome message set!")
 	} else {
 		return &botError{ERR_WELCOME_COMMAND, ""}
@@ -490,25 +536,25 @@ func SetGoodbye(b *botResponse) error {
 	if err != nil {
 		return &botError{ERR_NO_CHANNEL, ""}
 	}
-	
-	guild, ok := Guilds[channel.GuildID];
+
+	guild, ok := Guilds[channel.GuildID]
 	if !ok {
 		g, err := b.s.Guild(channel.GuildID)
 		if err != nil {
 			return &botError{ERR_NO_GUILD, ""}
 		}
-		
+
 		guild = NewGuild(g)
 	}
-	
+
 	if !guild.IsManaged() {
 		return &botError{ERR_NOT_MANAGED, ""}
 	}
-	
+
 	if !guild.IsOwner(b.m.Author) {
 		return &botError{ERR_NOT_OWNER, ""}
 	}
-	
+
 	if len(b.fields) > 1 {
 		goodbye := strings.Join(b.fields[1:], " ")
 		guild.SetGoodbye(goodbye)
@@ -520,25 +566,69 @@ func SetGoodbye(b *botResponse) error {
 	return nil
 }
 
+// PrintNormalToDiscord prints a normal pokemon to discord
+func PrintNormalToDiscord(b *botResponse) error {
+	pokemonName := strings.ToLower(b.fields[1])
+
+	if p, err := pogo.GetPokemon(pokemonName); err == nil {
+		normal, err := p.GetNormal()
+		if err != nil {
+			return &botError{ERR_NO_IMAGE, p.Name}
+		}
+
+		f, err := os.Open(normal)
+		if err != nil {
+			return &botError{ERR_NO_IMAGE, p.Name}
+		}
+
+		b.SendImageToDiscord(fmt.Sprintf("%s.png", strings.Replace(strings.ToLower(p.Name), " ", "-", -1)), f)
+	} else {
+		return &botError{ERR_POKEMON_UNRECOGNIZED, b.fields[1]}
+	}
+	return nil
+}
+
+// PrintShinyToDiscord prints a shiny pokemon to discord
+func PrintShinyToDiscord(b *botResponse) error {
+	pokemonName := strings.ToLower(b.fields[1])
+
+	if p, err := pogo.GetPokemon(pokemonName); err == nil {
+		shiny, err := p.GetShiny()
+		if err != nil {
+			return &botError{ERR_NO_IMAGE, p.Name}
+		}
+
+		f, err := os.Open(shiny)
+		if err != nil {
+			return &botError{ERR_NO_IMAGE, p.Name}
+		}
+
+		b.SendImageToDiscord(fmt.Sprintf("%s-shiny.png", strings.Replace(strings.ToLower(p.Name), " ", "-", -1)), f)
+	} else {
+		return &botError{ERR_POKEMON_UNRECOGNIZED, b.fields[1]}
+	}
+	return nil
+}
+
 // PrintInfoToDiscord prints the bot info to discord
 func PrintInfoToDiscord(b *botResponse) error {
 	channel, err := b.s.Channel(b.m.ChannelID)
 	if err != nil {
 		return &botError{ERR_NO_CHANNEL, ""}
 	}
-	
-	guild, ok := Guilds[channel.GuildID];
+
+	guild, ok := Guilds[channel.GuildID]
 	if !ok {
 		return &botError{ERR_NO_GUILD, ""}
 	}
-	
+
 	prefix := guild.Settings.BotPrefix
-	
+
 	emb := NewEmbed().
 		//SetTitle("Haynes Bot Commands").
 		SetColor(0x00ff00).
 		AddField("Commands", Example(strings.Replace(INFO_FORMAT, "!", prefix, 1)))
-		
+
 	for _, cmd := range cmdList {
 		if !cmd.Print {
 			continue
@@ -569,16 +659,11 @@ func PrintIVToDiscord(b *botResponse) error {
 	if err != nil {
 		return &botError{ERR_IV_COMMAND, ""}
 	}
-	
+
 	hp, err := strconv.Atoi(b.fields[3])
 	if err != nil {
 		return &botError{ERR_IV_COMMAND, ""}
 	}
-
-    hp, err := strconv.Atoi(b.fields[3])
-    if err != nil {
-        return &botError{ERR_IV_COMMAND, ""}
-    }
 
 	level := 0.0
 	stardust := 0
@@ -614,10 +699,10 @@ func PrintIVToDiscord(b *botResponse) error {
 			return &botError{ERR_NO_COMBINATIONS, p.Name}
 		} else {
 			emb := NewEmbed().
-					SetColor(0x9013FE).
-					AddField(fmt.Sprintf("CP: %d", cp), Example(ivChart)).
-					SetAuthor(p.Name, p.API.Sprites.Front)
-					//SetImage(p.API.Sprites.Front).MessageEmbed
+				SetColor(0x9013FE).
+				AddField(fmt.Sprintf("CP: %d", cp), Example(ivChart)).
+				SetAuthor(p.Name, p.API.Sprites.Front)
+				//SetImage(p.API.Sprites.Front).MessageEmbed
 			if len(stats) > 30 {
 				emb.SetDescription("Full chart too long to display, displaying first 30 rows. \nAdd more data to limit results.")
 			}
@@ -650,9 +735,9 @@ func PrintCPToDiscord(b *botResponse) error {
 	if p, err := pogo.GetPokemon(pokemonName); err == nil {
 		cp := p.GetCP(level, ivA, ivD, ivS)
 		emb := NewEmbed().
-		SetColor(0x9013FE).
-		AddField(p.Name, fmt.Sprintf("CP at level %v with IVs %d/%d/%d: %d", level, ivA, ivD, ivS, cp)).
-		SetThumbnail(p.API.Sprites.Front).MessageEmbed
+			SetColor(0x9013FE).
+			AddField(p.Name, fmt.Sprintf("CP at level %v with IVs %d/%d/%d: %d", level, ivA, ivD, ivS, cp)).
+			SetThumbnail(p.API.Sprites.Front).MessageEmbed
 		b.PrintEmbedToDiscord(emb)
 	} else {
 		return &botError{ERR_POKEMON_UNRECOGNIZED, b.fields[1]}
@@ -675,9 +760,9 @@ func PrintMaxCPToDiscord(b *botResponse) error {
 			return &botError{ERR_NO_STATS, p.Name}
 		}
 		emb := NewEmbed().
-		SetColor(0x9013FE).
-		AddField(p.Name, fmt.Sprintf("Max CP: %v", maxcp)).
-		SetThumbnail(p.API.Sprites.Front).MessageEmbed
+			SetColor(0x9013FE).
+			AddField(p.Name, fmt.Sprintf("Max CP: %v", maxcp)).
+			SetThumbnail(p.API.Sprites.Front).MessageEmbed
 		b.PrintEmbedToDiscord(emb)
 	} else {
 		return &botError{ERR_POKEMON_UNRECOGNIZED, b.fields[1]}
@@ -697,51 +782,51 @@ func PrintRaidChartToDiscord(b *botResponse) error {
 	if p, err := pogo.GetPokemon(pokemonName); err == nil {
 		ivList, chart := p.GetRaidCPChart()
 		if UseImages {
-			imgName := fmt.Sprintf("RAIDCHART-%s.png", p.Name)
+			imgName := fmt.Sprintf("RAIDCHART-%s.png", p.ID)
 			if ImageExists(imgName) {
-					f, err := os.Open(ImageServer + "/" + imgName)
-					if err != nil {
-						fmt.Println(err.Error())
-					}
-					b.SendImageToDiscord(imgName, f)
-				} else {
-					fmt.Println("Getting table")
-					GetTable(p, ivList, imgName)
-					
-					f, err := os.Open(ImageServer + "/" + imgName)
-					if err != nil {
-						fmt.Println(err.Error())
-					}
-					
-					b.SendImageToDiscord(imgName, f)
-				} 
-			
+				f, err := os.Open(ImageServer + "/" + imgName)
+				if err != nil {
+					fmt.Println(err.Error())
+				}
+				b.SendImageToDiscord(imgName, f)
+			} else {
+				fmt.Println("Getting table")
+				GetTable(p, ivList, imgName)
+
+				f, err := os.Open(ImageServer + "/" + imgName)
+				if err != nil {
+					fmt.Println(err.Error())
+				}
+
+				b.SendImageToDiscord(imgName, f)
+			}
+
 		} else {
 			rows := strings.Split(chart, "\n")
 			emb := NewEmbed().
 				SetColor(0x9013FE).
 				AddField("Raid Chart", Example(strings.Join(rows[:40], "\n")))
-				
-				if len(b.fields) > 2 {
-					if strings.ToLower(b.fields[2]) == "full" {
-						rowCount := len(rows)
-						st, en := 41, 80
-						for {
-							if en > rowCount {
-								en = rowCount
-							}
-							emb.AddField("Continued", Example(strings.Join(rows[st:en], "\n")))
-							
-							if en == rowCount || en > 200 {
-								break
-							}
-							st+=40
-							en+=40
+
+			if len(b.fields) > 2 {
+				if strings.ToLower(b.fields[2]) == "full" {
+					rowCount := len(rows)
+					st, en := 41, 80
+					for {
+						if en > rowCount {
+							en = rowCount
 						}
+						emb.AddField("Continued", Example(strings.Join(rows[st:en], "\n")))
+
+						if en == rowCount || en > 200 {
+							break
+						}
+						st += 40
+						en += 40
 					}
 				}
-				emb.SetAuthor(p.Name, p.API.Sprites.Front)
-				b.PrintEmbedToDiscord(emb.MessageEmbed)
+			}
+			emb.SetAuthor(p.Name, p.API.Sprites.Front)
+			b.PrintEmbedToDiscord(emb.MessageEmbed)
 		}
 	} else {
 		return &botError{ERR_POKEMON_UNRECOGNIZED, b.fields[1]}
@@ -761,9 +846,9 @@ func PrintRaidCPToDiscord(b *botResponse) error {
 	if p, err := pogo.GetPokemon(pokemonName); err == nil {
 		if len(b.fields) == 2 {
 			emb := NewEmbed().
-			SetColor(0x9013FE).
-			AddField(p.Name + " Raid CP", p.GetRaidCPRange()).
-			SetThumbnail(p.API.Sprites.Front).MessageEmbed
+				SetColor(0x9013FE).
+				AddField(p.Name+" Raid CP", p.GetRaidCPRange()).
+				SetThumbnail(p.API.Sprites.Front).MessageEmbed
 			b.PrintEmbedToDiscord(emb)
 		} else {
 			cp, err := strconv.Atoi(b.fields[2])
@@ -783,20 +868,20 @@ func PrintRaidCPToDiscord(b *botResponse) error {
 					b.SendImageToDiscord(imgName, f)
 				} else {
 					file := GetTable(ivList, imgName)
-					
+
 					b.SendImageToDiscord(imgName, file)
-				} 
+				}
 			} else {*/
-				if len(ivChart) == 0 {
-					return &botError{ERR_NO_COMBINATIONS, p.Name}
-				} else {
-					emb := NewEmbed().
+			if len(ivChart) == 0 {
+				return &botError{ERR_NO_COMBINATIONS, p.Name}
+			} else {
+				emb := NewEmbed().
 					SetColor(0x9013FE).
 					AddField(fmt.Sprintf("CP: %d", cp), Example(ivChart)).
 					SetAuthor(p.Name, p.API.Sprites.Front).MessageEmbed
-					//SetImage(p.API.Sprites.Front).MessageEmbed
-					b.PrintEmbedToDiscord(emb)
-				}
+				//SetImage(p.API.Sprites.Front).MessageEmbed
+				b.PrintEmbedToDiscord(emb)
+			}
 			//}
 		}
 	} else {
@@ -816,11 +901,11 @@ func PrintMovesToDiscord(b *botResponse) error {
 
 	if p, err := pogo.GetPokemon(pokemonName); err == nil {
 		emb := NewEmbed().
-		SetTitle(fmt.Sprintf("Moves for %s", p.Name)).
-		SetColor(0x0B9EFF).
-		AddField("Fast", p.Moves.Fast.Print()).
-		AddField("Charge", p.Moves.Charge.Print()).
-		SetThumbnail(p.API.Sprites.Front).MessageEmbed
+			SetTitle(fmt.Sprintf("Moves for %s", p.Name)).
+			SetColor(0x0B9EFF).
+			AddField("Fast", p.Moves.Fast.Print()).
+			AddField("Charge", p.Moves.Charge.Print()).
+			SetThumbnail(p.API.Sprites.Front).MessageEmbed
 		b.PrintEmbedToDiscord(emb)
 	} else {
 		return &botError{ERR_POKEMON_UNRECOGNIZED, b.fields[1]}
@@ -839,9 +924,9 @@ func PrintTypeToDiscord(b *botResponse) error {
 
 	if p, err := pogo.GetPokemon(pokemonName); err == nil {
 		emb := NewEmbed().
-		SetColor(0x9013FE).
-		AddField(fmt.Sprintf("Type for %s", p.Name), p.Types.Print()).
-		SetThumbnail(p.API.Sprites.Front).MessageEmbed
+			SetColor(0x9013FE).
+			AddField(fmt.Sprintf("Type for %s", p.Name), p.Types.Print()).
+			SetThumbnail(p.API.Sprites.Front).MessageEmbed
 		b.PrintEmbedToDiscord(emb)
 	} else {
 		return &botError{ERR_POKEMON_UNRECOGNIZED, b.fields[1]}
@@ -852,12 +937,12 @@ func PrintTypeToDiscord(b *botResponse) error {
 
 // PrintLuckyDateToDiscord prints the lucky date to discord
 func PrintLuckyDateToDiscord(b *botResponse) error {
-    now := time.Now()
-    luckydate := now.AddDate(0, 0, -780)
-    msg := fmt.Sprintf("Any Pokémon older than **%s** has the highest chance to become lucky.", luckydate.Format("01/02/2006"))
-    _, _ = b.s.ChannelMessageSend(b.m.ChannelID, msg)
+	now := time.Now()
+	luckydate := now.AddDate(0, 0, -780)
+	msg := fmt.Sprintf("Any Pokémon older than **%s** has the highest chance to become lucky.", luckydate.Format("01/02/2006"))
+	_, _ = b.s.ChannelMessageSend(b.m.ChannelID, msg)
 
-    return nil
+	return nil
 }
 
 // PrintTypeToDiscord prints an embed with a type chart to discord
@@ -870,23 +955,23 @@ func PrintTypeChartToDiscord(b *botResponse) error {
 
 	if p, err := pogo.GetPokemon(typeValue); err == nil {
 		emb := NewEmbed().
-		SetColor(0x9013FE).
-		SetTitle(fmt.Sprintf("Type Effects for %s", p.Name)).
-		AddField("Super Effective", p.SuperEffective.Print()).
-		AddField("Not Effective", p.NotEffective.Print()).
-		AddField("Weaknesses", p.Weakness.Print()).
-		AddField("Resistance", p.Resistance.Print()).
-		SetThumbnail(p.API.Sprites.Front).MessageEmbed
+			SetColor(0x9013FE).
+			SetTitle(fmt.Sprintf("Type Effects for %s", p.Name)).
+			AddField("Super Effective", p.SuperEffective.Print()).
+			AddField("Not Effective", p.NotEffective.Print()).
+			AddField("Weaknesses", p.Weakness.Print()).
+			AddField("Resistance", p.Resistance.Print()).
+			SetThumbnail(p.API.Sprites.Front).MessageEmbed
 		b.PrintEmbedToDiscord(emb)
 	} else if t, err := pogo.GetType(typeValue); err == nil {
 		emb := NewEmbed().
-		SetColor(0x9013FE).
-		SetTitle(fmt.Sprintf("Type Effects for %s", t.Name)).
-		AddField("Super Effective", t.SuperEffective.Print()).
-		AddField("Not Effective", t.NotEffective.Print()).
-		AddField("Weaknesses", t.Weakness.Print()).
-		AddField("Resistance", t.Resistance.Print()).
-		SetThumbnail(t.Thumbnail).MessageEmbed
+			SetColor(0x9013FE).
+			SetTitle(fmt.Sprintf("Type Effects for %s", t.Name)).
+			AddField("Super Effective", t.SuperEffective.Print()).
+			AddField("Not Effective", t.NotEffective.Print()).
+			AddField("Weaknesses", t.Weakness.Print()).
+			AddField("Resistance", t.Resistance.Print()).
+			SetThumbnail(t.Thumbnail).MessageEmbed
 		b.PrintEmbedToDiscord(emb)
 	} else {
 		return &botError{ERR_POKEMON_TYPE_UNRECOGNIZED, b.fields[1]}
@@ -925,7 +1010,7 @@ func (b *botResponse) PrintErrorToDiscord(err error) {
 }
 
 type botError struct {
-	err     error
+	err   error
 	value string
 }
 
@@ -939,7 +1024,7 @@ func (e *botError) Error() string {
 			return ""
 		}
 	}
-	
+
 	if e.err == ERR_POKEMON_UNRECOGNIZED && e.value != "" {
 		return fmt.Sprintf("Pokemon unrecognized: %s", e.value)
 	} else if e.err == ERR_POKEMON_TYPE_UNRECOGNIZED && e.value != "" {
@@ -952,6 +1037,8 @@ func (e *botError) Error() string {
 		return fmt.Sprintf("Missing role: %s", e.value)
 	} else if e.err == ERR_INVALID_ROLE && e.value != "" {
 		return fmt.Sprintf("Invalid role: %s", e.value)
+	} else if e.err == ERR_NO_IMAGE && e.value != "" {
+		return fmt.Sprintf("No image found for: %s", e.value)
 	}
 	return e.err.Error()
 }
@@ -959,7 +1046,7 @@ func (e *botError) Error() string {
 // ImageExists checks if an image exists in the image server folder
 func ImageExists(name string) bool {
 	if _, err := os.Stat(ImageServer + "/" + name); err != nil {
-	  return false
+		return false
 	}
 	return true
 }
