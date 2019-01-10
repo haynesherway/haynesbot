@@ -231,6 +231,7 @@ func Start() {
 	goBot.AddHandler(messageHandler)
 	goBot.AddHandler(welcomeHandler)
 	goBot.AddHandler(goodbyeHandler)
+	goBot.AddHandler(guildAddHandler)
 	err = goBot.Open()
 	if err != nil {
 		fmt.Println(err.Error())
@@ -306,12 +307,6 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	guild.Update()
 
 	prefix := guild.Settings.BotPrefix
-	imageChannel := guild.Settings.ImageChannel
-
-	if m.ChannelID == imageChannel && len(m.Attachments) != 0 {
-		ReadImage(m.Attachments[0])
-		return
-	}
 
 	if !strings.HasPrefix(m.Content, prefix) {
 		return
@@ -334,6 +329,12 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	return
 
+}
+
+func guildAddHandler(s *discordgo.Session, g *discordgo.GuildCreate) {
+	NewGuild(g.Guild)
+	fmt.Println("Added guild")
+	return
 }
 
 // AddGuild adds a guild to the guild management and checks for requirements
@@ -366,8 +367,6 @@ func AddGuild(b *botResponse) error {
 		}
 	}
 
-	guild.Manage(true)
-
 	b.PrintToDiscord("Guild management added!")
 
 	return nil
@@ -393,8 +392,6 @@ func SetIVChannel(b *botResponse) error {
 	if !guild.IsOwner(b.m.Author) {
 		return &botError{ERR_NOT_OWNER, ""}
 	}
-
-	guild.SetImageChannel(channel.ID)
 
 	b.PrintToDiscord("Haynesbot IV Channel successfully changed.")
 

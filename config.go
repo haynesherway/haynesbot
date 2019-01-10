@@ -10,8 +10,14 @@ import (
 	"runtime"
 )
 
+const (
+	botSchema     = "haynesbot"
+	testBotSchema = "haynesbot_test"
+)
+
 // Config values
 var (
+	BotSchema   string
 	Token       string
 	TestToken   string
 	BotPrefix   string
@@ -23,6 +29,8 @@ var (
 )
 
 type configStruct struct {
+	BotSchema     string `json:"BotSchema"`
+	TestBotSchema string `json:"TestBotSchema"`
 	Token         string `json:"Token"`
 	BotPrefix     string `json:"BotPrefix"`
 	TestToken     string `json:"TestToken"`
@@ -58,11 +66,10 @@ func ReadConfig() error {
 
 		config.Token = config.TestToken
 		config.BotPrefix = config.TestPrefix
-		config.GuildFile = config.TestGuildFile
+		config.BotSchema = config.TestBotSchema
 	}
 
-	log.Println("Guild file: ", config.GuildFile)
-	readGuildSettings(config.GuildFile)
+	readGuildSettings(botSchema)
 
 	TestToken = config.TestToken
 	Token = config.Token

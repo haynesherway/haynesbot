@@ -36,14 +36,17 @@ type GuildSettings struct {
 
 // GuildSetting is a holder for the settings of a single guild
 type GuildSetting struct {
-	Name         string `json:"Name"`
-	ID           string `json:"ID"`
-	Managed      bool   `json:"Managed"`
-	Teams        bool   `json:"Teams"`
-	BotPrefix    string `json:"Prefix,omitempty"`
-	Welcome      string `json:"Welcome,omitempty"`
-	Goodbye      string `json:"Goodbye,omitempty"`
-	ImageChannel string `json:"ImageChannel,omitempty"`
+	Name            string `json:"Name" db:"name"`
+	ID              string `json:"ID" db:"id"`
+	Level           string `db:"level"`
+	Managed         bool   `json:"Managed" db:"managed"`
+	Teams           bool   `json:"Teams"`
+	BotPrefix       string `json:"Prefix,omitempty" db:"prefix"`
+	OwnerID         string `db:"ownerID"`
+	SystemChannelID string `db:"systemChannelID"`
+	MemberCount     int    `db:"memberCount"`
+	Welcome         string `json:"Welcome,omitempty"`
+	Goodbye         string `json:"Goodbye,omitempty"`
 }
 
 // Guild is a representation of a single discord guild
@@ -60,9 +63,6 @@ func initGuilds(state *discordgo.State) error {
 			Guilds[g.ID].Guild = g
 			if guild.Settings.BotPrefix == "" {
 				guild.Settings.BotPrefix = config.BotPrefix
-			}
-			if guild.Settings.ImageChannel == "" {
-				guild.GetImageChannelID()
 			}
 		} else {
 			// No previous settings exist, give default
@@ -84,10 +84,7 @@ func NewGuild(guild *discordgo.Guild) *Guild {
 		BotPrefix: config.BotPrefix,
 	}}
 
-	if guild.Name != "" {
-		botGuild.Settings.Name = guild.Name
-	}
-	botGuild.GetImageChannelID()
+	botGuild.Update()
 	Guilds[guild.ID] = botGuild
 
 	return botGuild
@@ -98,12 +95,6 @@ func (guild *Guild) Update() error {
 	if guild.Settings.Name == "" {
 		return guildSettings.add(guild).save(config.GuildFile)
 	}
-	return nil
-}
-
-func (guild *Guild) SetImageChannel(channel string) error {
-	guild.Settings.ImageChannel = channel
-	guildSettings.add(guild).save(config.GuildFile)
 	return nil
 }
 
@@ -161,21 +152,6 @@ func (guild *Guild) CheckRoles() error {
 		}
 	}
 
-	return nil
-}
-
-func (guild *Guild) GetImageChannelID() error {
-	if guild.Settings.ImageChannel != "" {
-		return nil
-	}
-
-	var err error
-	guild.Settings.ImageChannel, err = guild.GetChannelID("haynesbot-ivs")
-	if err != nil {
-		log.Println(err.Error())
-	}
-
-	fmt.Println(guild.Settings.ImageChannel)
 	return nil
 }
 
