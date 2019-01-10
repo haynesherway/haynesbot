@@ -46,6 +46,7 @@ var (
 	ERR_NO_CHANNEL = errors.New("Unable to get Channel ID")
 	ERR_NO_GUILD   = errors.New("Unable to get Guild ID")
 	ERR_NO_TEAM    = errors.New("No team provided.")
+	ERR_NO_ROLE    = errors.New("No role provided.")
 	ERR_NOT_OWNER  = errors.New("Only the server owner can use that command :)")
 
 	ERR_MISSING_ROLE = errors.New("Missing role.")
@@ -157,9 +158,9 @@ var botCommands = []BotCommand{
 		[]string{},
 		AssignTeam,
 	},
-	/*{"add", "!add", "Add this guild to management",
+	{"add", "!add", "Add this guild to management",
 		[]string{}, false, []string{}, AddGuild,
-	},*/
+	},
 	{"setprefix", "!setprefix {prefix string}", "Change bot prefix for server",
 		[]string{}, false, []string{},
 		SetBotPrefix,
@@ -172,9 +173,13 @@ var botCommands = []BotCommand{
 		[]string{}, false, []string{},
 		SetGoodbye,
 	},
-	{"setiv", "!setiv", "Set IV Channel for Images",
-		[]string{}, false, []string{},
-		SetIVChannel,
+	{"addrole", "!addrole {role}", "Add role to your user",
+		[]string{"!addrole EX-raids"}, false, []string{},
+		AddRoleToUser,
+	},
+	{"removerole", "!removerole {role}", "Remove a role from your user",
+		[]string{"!removerole EX-raids"}, false, []string{},
+		RemoveRoleFromUser,
 	},
 }
 
@@ -306,12 +311,6 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	guild.Update()
 
 	prefix := guild.Settings.BotPrefix
-	imageChannel := guild.Settings.ImageChannel
-
-	if m.ChannelID == imageChannel && len(m.Attachments) != 0 {
-		ReadImage(m.Attachments[0])
-		return
-	}
 
 	if !strings.HasPrefix(m.Content, prefix) {
 		return
@@ -393,8 +392,6 @@ func SetIVChannel(b *botResponse) error {
 	if !guild.IsOwner(b.m.Author) {
 		return &botError{ERR_NOT_OWNER, ""}
 	}
-
-	guild.SetImageChannel(channel.ID)
 
 	b.PrintToDiscord("Haynesbot IV Channel successfully changed.")
 
@@ -489,6 +486,98 @@ func AssignTeam(b *botResponse) error {
 	}
 
 	b.PrintToDiscord(fmt.Sprintf("You have been added to team %s!", team))
+
+	return nil
+}
+
+func AddRoleToUser(b *botResponse) error {
+	if len(b.fields) < 2 {
+		return &botError{ERR_NO_ROLE, ""}
+	}
+
+	role := strings.ToLower(b.fields[1])
+	// Make sure this is a valid team
+	if !IsValidRole(role) {
+		return &botError{ERR_INVALID_ROLE, b.fields[1]}
+	}
+
+	// Attempt to get the channel from the state
+	// If error, fall back to restapi
+	channel, err := b.s.State.Channel(b.m.ChannelID)
+	if err != nil {
+		channel, err = b.s.Channel(b.m.ChannelID)
+		if err != nil {
+			return &botError{ERR_NO_CHANNEL, ""}
+		}
+	}
+
+	// Attempt to get the guild from the state
+	guild, ok := Guilds[channel.GuildID]
+	if !ok {
+		g, err := b.s.Guild(channel.GuildID)
+		if err != nil {
+			return &botError{ERR_NO_GUILD, ""}
+		}
+
+		guild = NewGuild(g)
+	}
+
+	if !guild.IsManaged() {
+		return &botError{ERR_NOT_MANAGED, ""}
+	}
+
+	err = guild.AddRole(b.s, b.m.Author.ID, role)
+	if err != nil {
+		return &botError{err, ""}
+	}
+
+	b.PrintToDiscord(fmt.Sprintf("You have been added to role %s!", role))
+
+	return nil
+}
+
+func RemoveRoleFromUser(b *botResponse) error {
+	if len(b.fields) < 2 {
+		return &botError{ERR_NO_ROLE, ""}
+	}
+
+	role := strings.ToLower(b.fields[1])
+	// Make sure this is a valid team
+	if !IsValidRole(role) {
+		return &botError{ERR_INVALID_ROLE, b.fields[1]}
+	}
+
+	// Attempt to get the channel from the state
+	// If error, fall back to restapi
+	channel, err := b.s.State.Channel(b.m.ChannelID)
+	if err != nil {
+		channel, err = b.s.Channel(b.m.ChannelID)
+		if err != nil {
+			return &botError{ERR_NO_CHANNEL, ""}
+		}
+	}
+
+	// Attempt to get the guild from the state
+	guild, ok := Guilds[channel.GuildID]
+	if !ok {
+		g, err := b.s.Guild(channel.GuildID)
+		if err != nil {
+			return &botError{ERR_NO_GUILD, ""}
+		}
+
+		guild = NewGuild(g)
+	}
+
+	if !guild.IsManaged() {
+		return &botError{ERR_NOT_MANAGED, ""}
+	}
+
+	err = guild.RemoveRole(b.s, b.m.Author.ID, role)
+	if err != nil {
+		return &botError{err, ""}
+	}
+
+	b.PrintToDiscord(fmt.Sprintf("You have been removed from role %s!", role))
 
 	return nil
 }
