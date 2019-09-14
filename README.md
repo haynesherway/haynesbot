@@ -97,15 +97,15 @@ You will need to put your discord bot token in the config.json file
 
 !moves
 
-<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/moves.png?raw=true" width="500" height="235" title="IV">
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/moves.png?raw=true" width="500" title="Moves">
 
 !effect pokemon
 
-<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/effect.png?raw=true" width="500" height="285" title="IV">
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/effect.png?raw=true" width="500" title="Effect">
 
 !effect type
 
-<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/effecttype.png?raw=true" width="500" height="282" title="IV">
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/effecttype.png?raw=true" width="500" height="282" title="Effect">
 
 !raidiv (!raidcp)
 
