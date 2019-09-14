@@ -113,7 +113,7 @@ You will need to put your discord bot token in the config.json file
 
 !iv
 
-<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/iv.png?raw=true" width="300" height="322" title="IV">
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/iv.png?raw=true" width="300" title="IV">
 
 !maxcp
 
