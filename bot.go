@@ -101,7 +101,7 @@ var botCommands = []BotCommand{
 	{"raidiv", "!raidiv [pokemon] {cp}",
 		"Get possible IV combinations for specified raid pokemon with specified IV",
 		[]string{"!raidcp kyogre 2292", "!raidcp groudon"}, true,
-		[]string{"raidcp", "eggcp", "eggiv", "mewcp", "mewiv"},
+		[]string{"raidcp", "eggcp", "eggiv", "mewcp", "mewiv", "celebiiv", "celebicp", "jirachiiv", "jirachicp"},
 		PrintRaidCPToDiscord,
 	},
 	{"raidchart", "!raidchart [pokemon] {'full'}",
@@ -208,6 +208,24 @@ func (b *botResponse) GetCommand(prefix string) (cmd *BotCommand) {
 	}
 
 	name := strings.ToLower(strings.Replace(b.fields[0], prefix, "", 1))
+	if len(name) > 2 && name[len(name)-2:len(name)] == "iv" {
+		pokemonName := name[0 : len(name)-2]
+		if _, err := pogo.GetPokemon(pokemonName); err == nil {
+			newfields := make([]string, len(b.fields)+1)
+			name = "raidiv"
+			for i, field := range b.fields {
+				if i == 0 {
+					newfields[i] = "raidiv"
+					continue
+				} else if i == 1 {
+					newfields[i] = pokemonName
+				}
+				newfields[i+1] = field
+			}
+			b.fields = newfields
+		}
+	}
+
 	if c, ok := cmdMap[name]; ok {
 		return &c
 	} else {
