@@ -53,6 +53,12 @@ Update 10/29/2018: !luckydate command added
 * **!luckydate**
 		Returns the date for pokemon to have been caught by for a higher change at luckies.
 		Example: !luckydate
+* **!normal**
+		Returns an image of the normal version of the pokemon.
+		Example: !normal pidgey
+* **!shiny**
+		Returns an image of the shiny version of the pokemon.
+		Example: !shiny pidgey
 		
 ## Server Owner Commands:
 
@@ -116,6 +122,14 @@ You will need to put your discord bot token in the config.json file
 !type
 
 <img src="https://github.com/haynesherway/haynesbot/blob/master/examples/type.png?raw=true" width="300" height="225" title="IV">
+
+!normal
+
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/normal.png?raw=true" width="300" title="Normal">
+
+!shiny 
+
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/shiny.png?raw=true" width="300" title="Shiny">
 
 !raidchart
 
