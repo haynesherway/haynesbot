@@ -83,7 +83,7 @@ You will need to put your discord bot token in the config.json file
 
 !wat
 
-<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/wat.png?raw=true" width="500" height="572" title="Wat">
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/wat.png?raw=true" width="500" height="700" title="Wat">
 
 !wat iv
 
@@ -119,5 +119,5 @@ You will need to put your discord bot token in the config.json file
 
 !raidchart
 
-![Raidchart Mew](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Mew.png?raw=true) ![Raidchart Latias](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Latias.png?raw=true) ![Raidchart Latios](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Latios.png?raw=true)
+![Raidchart Mewtwo-A](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-mewtwo-a.png?raw=true) ![Raidchart Deoxys](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-deoxys.png?raw=true) ![Raidchart Jirachi](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-jirachi.png?raw=true)
 
