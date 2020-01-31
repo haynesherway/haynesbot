@@ -35,6 +35,7 @@ type configStruct struct {
 
 // ReadConfig reads the config file and initializes values using those configs
 func ReadConfig() error {
+	flag.Parse()
 	log.Println("Reading from config file...")
 
 	_, filename, _, ok := runtime.Caller(1)
@@ -75,5 +76,4 @@ func ReadConfig() error {
 
 func init() {
 	flag.BoolVar(&test, "t", false, "Run for testing")
-	flag.Parse()
 }
