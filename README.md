@@ -7,11 +7,10 @@ A discord bot that does pokemon go related things, like calculate IVs and displa
 Calculations and pokemon data come from [haynesherway/pogo](https://www.github.com/haynesherway/pogo)
 
 To add the bot to your server:  https://discordapp.com/oauth2/authorize?client_id=402854185072328714&scope=bot
-**NOTE: Currently, if you add the bot to your server, it needs a restart to be able to send messages, so please send me a message here or in the discord below so I can restart it for you. If this becomes a more common issue, I will spend the time fixing it, but currently it is only added to around 1 server a week.**
+**NOTE: Currently, if you add the bot to your server, it needs a restart to be able to send messages, so you can either wait until it happens to restart, or join my patreon for a quick response and access to the Discord :) **
 
-HaynesBot help discord: https://discord.gg/CakVND
-
-I made a patreon because people said they wanted to donate to the project, but it isn't necessary.
+I made a patreon because people said they wanted to donate to the project, though I feel like no one ever actually will.
+But! If you do donate, you'll get access to the Haynesbot discord to be able to get quick answers to questions and suggest enhancements.
 https://www.patreon.com/haynesbot
 
 Update 4/5/2018: The !raidiv command now also works with research reward encounters (level 15)
@@ -53,6 +52,12 @@ Update 10/29/2018: !luckydate command added
 * **!luckydate**
 		Returns the date for pokemon to have been caught by for a higher change at luckies.
 		Example: !luckydate
+* **!normal**
+		Returns an image of the normal version of the pokemon.
+		Example: !normal pidgey
+* **!shiny**
+		Returns an image of the shiny version of the pokemon.
+		Example: !shiny pidgey
 		
 ## Server Owner Commands:
 
@@ -83,7 +88,7 @@ You will need to put your discord bot token in the config.json file
 
 !wat
 
-<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/wat.png?raw=true" width="500" height="572" title="Wat">
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/wat.png?raw=true" width="500" height="700" title="Wat">
 
 !wat iv
 
@@ -91,15 +96,15 @@ You will need to put your discord bot token in the config.json file
 
 !moves
 
-<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/moves.png?raw=true" width="500" height="235" title="IV">
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/moves.png?raw=true" width="500" title="Moves">
 
 !effect pokemon
 
-<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/effect.png?raw=true" width="500" height="285" title="IV">
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/effect.png?raw=true" width="500" title="Effect">
 
 !effect type
 
-<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/effecttype.png?raw=true" width="500" height="282" title="IV">
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/effecttype.png?raw=true" width="500" height="282" title="Effect">
 
 !raidiv (!raidcp)
 
@@ -107,7 +112,7 @@ You will need to put your discord bot token in the config.json file
 
 !iv
 
-<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/iv.png?raw=true" width="300" height="322" title="IV">
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/iv.png?raw=true" width="300" title="IV">
 
 !maxcp
 
@@ -117,7 +122,15 @@ You will need to put your discord bot token in the config.json file
 
 <img src="https://github.com/haynesherway/haynesbot/blob/master/examples/type.png?raw=true" width="300" height="225" title="IV">
 
+!normal
+
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/normal.png?raw=true" width="300" title="Normal">
+
+!shiny 
+
+<img src="https://github.com/haynesherway/haynesbot/blob/master/examples/shiny.png?raw=true" width="300" title="Shiny">
+
 !raidchart
 
-![Raidchart Mew](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Mew.png?raw=true) ![Raidchart Latias](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Latias.png?raw=true) ![Raidchart Latios](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-Latios.png?raw=true)
+![Raidchart Mewtwo-A](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-mewtwo-a.png?raw=true) ![Raidchart Deoxys](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-deoxys.png?raw=true) ![Raidchart Jirachi](https://github.com/haynesherway/haynesbot/blob/master/examples/RAIDCHART-jirachi.png?raw=true)
 
