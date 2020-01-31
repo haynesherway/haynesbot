@@ -7,11 +7,10 @@ A discord bot that does pokemon go related things, like calculate IVs and displa
 Calculations and pokemon data come from [haynesherway/pogo](https://www.github.com/haynesherway/pogo)
 
 To add the bot to your server:  https://discordapp.com/oauth2/authorize?client_id=402854185072328714&scope=bot
-**NOTE: Currently, if you add the bot to your server, it needs a restart to be able to send messages, so please send me a message here or in the discord below so I can restart it for you. If this becomes a more common issue, I will spend the time fixing it, but currently it is only added to around 1 server a week.**
+**NOTE: Currently, if you add the bot to your server, it needs a restart to be able to send messages, so you can either wait until it happens to restart, or join my patreon for a quick response and access to the Discord :) **
 
-HaynesBot help discord: https://discord.gg/CakVND
-
-I made a patreon because people said they wanted to donate to the project, but it isn't necessary.
+I made a patreon because people said they wanted to donate to the project, though I feel like no one ever actually will.
+But! If you do donate, you'll get access to the Haynesbot discord to be able to get quick answers to questions and suggest enhancements.
 https://www.patreon.com/haynesbot
 
 Update 4/5/2018: The !raidiv command now also works with research reward encounters (level 15)
